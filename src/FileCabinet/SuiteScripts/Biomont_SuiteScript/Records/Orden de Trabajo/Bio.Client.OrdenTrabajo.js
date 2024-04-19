@@ -215,7 +215,9 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
                         // Ejecutar peticion
                         let responseData = sendRequest(method, id_campo_usuario_firma, id_campo_fecha_firma);
-                        refreshPage(responseData);
+                        if (responseData.status == 'success' && responseData.urlRecord) {
+                            refreshPage(responseData);
+                        }
                     }
                 });
             });
