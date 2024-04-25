@@ -258,9 +258,9 @@ define(['N'],
                         label: "Artículo"
                     }),
                     search.createColumn({
-                        name: "quantity",
+                        name: "bomquantity",
                         join: "component",
-                        label: "Cantidad"
+                        label: "Cantidad BOM"
                     }),
                     search.createColumn({
                         name: "units",
@@ -283,14 +283,14 @@ define(['N'],
                 let { columns } = result;
                 let articulo_id_interno = result.getValue(columns[0])
                 let articulo_nombre = result.getText(columns[0])
-                let cantidad = result.getValue(columns[1])
+                let cantidad_bom = result.getValue(columns[1])
                 let unidad_id_interno = result.getValue(columns[2])
                 let unidad_nombre = result.getText(columns[2])
 
                 // Insertar informacion en array
                 bomRevisionArray.push({
                     articulo: { id_interno: articulo_id_interno, nombre: articulo_nombre },
-                    cantidad: cantidad,
+                    cantidad_bom: cantidad_bom,
                     unidad: { id_interno: unidad_id_interno, nombre: unidad_nombre }
                 });
                 return true;
