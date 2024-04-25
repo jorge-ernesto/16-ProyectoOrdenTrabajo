@@ -51,9 +51,9 @@ define(['./lib/Bio.Library.Helper', 'N'],
             // Obtener datos
             let formulario = recordContext.getValue('customform') || null;
 
-            // Debug
-            console.log('pageInit');
-            console.log({ recordContext, mode });
+            // DEBUG
+            // SIEMPRE SE EJECUTA
+            console.log('pageInit!!!', scriptContext);
 
             // Modo crear, editar, copiar y formularios
             if ((mode == 'create' || mode == 'edit' || mode == 'copy') && formularios.includes(Number(formulario))) {
@@ -61,6 +61,39 @@ define(['./lib/Bio.Library.Helper', 'N'],
                 // Deshabilitar campos firmas
                 deshabilitarCamposFirmas(recordContext, mode);
             }
+        }
+
+        /**
+         * Validation function to be executed when field is changed.
+         *
+         * @param {Object} scriptContext
+         * @param {Record} scriptContext.currentRecord - Current form record
+         * @param {string} scriptContext.sublistId - Sublist name
+         * @param {string} scriptContext.fieldId - Field name
+         * @param {number} scriptContext.lineNum - Line number. Will be undefined if not a sublist or matrix field
+         * @param {number} scriptContext.columnNum - Line number. Will be undefined if not a matrix field
+         *
+         * @returns {boolean} Return true if field is valid
+         *
+         * @since 2015.2
+         */
+        function validateField(scriptContext) {
+
+            // Obtener el currentRecord y mode
+            let recordContext = scriptContext.currentRecord;
+            let mode = recordContext.getValue('id') ? 'edit' : 'create';
+
+            // Obtener datos
+            let formulario = recordContext.getValue('customform') || null;
+
+            // Modo crear, editar, copiar y formularios
+            if ((mode == 'create' || mode == 'edit' || mode == 'copy') && formularios.includes(Number(formulario))) {
+
+                // Habilitar campos de sublista por estado
+                habilitarCamposSublistaPorEstado(scriptContext, recordContext, mode);
+            }
+
+            return true;
         }
 
         /**
@@ -87,11 +120,11 @@ define(['./lib/Bio.Library.Helper', 'N'],
             // Modo crear, editar, copiar y formularios
             if ((mode == 'create' || mode == 'edit' || mode == 'copy') && formularios.includes(Number(formulario))) {
 
-                setValueSubList(scriptContext);
+                setValueSubList(scriptContext, recordContext, mode);
             }
         }
 
-        function setValueSubList(scriptContext) {
+        function setValueSubList(scriptContext, recordContext, mode) {
 
             // DEBUG
             // SI EL EVENTO OCURRE A NIVEL DE CAMPOS DE CABECERA
@@ -109,8 +142,6 @@ define(['./lib/Bio.Library.Helper', 'N'],
             // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LOS CAMPOS REVISION DE LISTA DE MATERIALES Y CANTIDAD
             if (scriptContext.fieldId == 'billofmaterialsrevision' || scriptContext.fieldId == 'quantity') {
 
-                // Obtener el currentRecord
-                let recordContext = scriptContext.currentRecord;
                 // Obtener data de la sublista
                 let sublistName = 'item';
                 let lineCount = recordContext.getLineCount({ sublistId: sublistName });
@@ -156,7 +187,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                             // Obtener cantidad de lista de materiales inicial
                             let cantidad_bom_ini = calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, arrayRevisionListaMateriales);
 
-                            // Setear datos en linea
+                            // Setear cantidad de lista de materiales inicial
                             recordContext.setCurrentSublistValue({
                                 sublistId: sublistName,
                                 fieldId: 'custcol_bio_cant_lis_mat_ini',
@@ -179,8 +210,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
             // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM Y CAMPOS ARTICULO, POCENTAJE DE RENDIMIENTO DEL COMPONENTE
             if (scriptContext.sublistId == 'item' && (scriptContext.fieldId == 'item' || scriptContext.fieldId == 'componentyield')) {
 
-                // Obtener el currentRecord e indice de la linea modificada
-                let recordContext = scriptContext.currentRecord;
+                // Obtener data de la sublista
                 let line = scriptContext.line;
 
                 // Obtener datos
@@ -210,19 +240,32 @@ define(['./lib/Bio.Library.Helper', 'N'],
                     // Validar data
                     if (columnItem && columnComponentYield) {
 
-                        // Obtener cantidad de lista de materiales inicial
-                        let cantidad_bom_ini = calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, arrayRevisionListaMateriales);
+                        // Solo realiza el calculo cuando encuentra el articulo en la revision de lista de materiales
+                        if (arrayRevisionListaMateriales[columnItem]) {
 
-                        // Setear cantidad de lista de materiales inicial
-                        recordContext.setCurrentSublistValue({
-                            sublistId: 'item',
-                            fieldId: 'custcol_bio_cant_lis_mat_ini',
-                            line: line,
-                            value: cantidad_bom_ini,
-                            ignoreFieldChange: true
-                        });
+                            // Obtener cantidad de lista de materiales inicial
+                            let cantidad_bom_ini = calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, arrayRevisionListaMateriales);
+
+                            // Setear cantidad de lista de materiales inicial
+                            recordContext.setCurrentSublistValue({
+                                sublistId: 'item',
+                                fieldId: 'custcol_bio_cant_lis_mat_ini',
+                                line: line,
+                                value: cantidad_bom_ini,
+                                ignoreFieldChange: true
+                            });
+                        }
                     }
                 }
+            }
+
+            /******************/
+
+            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM
+            if (scriptContext.sublistId == 'item' || scriptContext.fieldId == 'orderstatus') {
+
+                // Habilitar campos de sublista por estado
+                habilitarCamposSublistaPorEstado(scriptContext, recordContext, mode);
             }
         }
 
@@ -233,7 +276,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
             let fDecimal = 5;
             let cantidad_bom_ini = 0;
-            let cantidad_bom = arrayRevisionListaMateriales[columnItem]?.['cantidad'] || 0;
+            let cantidad_bom = arrayRevisionListaMateriales[columnItem]?.['cantidad_bom'] || 0;
             let cantidad = recordContext.getValue('quantity') || 0;
             let rend_comp = (columnComponentYield / 100) || 0
             if (rend_comp != 0) {
@@ -285,9 +328,8 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
         function deshabilitarCamposFirmas(recordContext, mode) {
 
-            // SuiteScript 2.x Modules
-            // N/currentRecord Module
-            // https://6462530.app.netsuite.com/app/help/helpcenter.nl?fid=section_4625600928.html
+            // Obtener campo y deshabilitarlo
+            // https://6462530-sb1.app.netsuite.com/app/help/helpcenter.nl?fid=section_4625600928.html
 
             // Deshabilitar campos
             // Formulario "BIO_FRM_ORDEN_DE_TRABAJO"
@@ -318,6 +360,77 @@ define(['./lib/Bio.Library.Helper', 'N'],
                 // Formulario "BIO_FRM_ORDEN_DE_TRABAJO_PILOTOS"
                 if (recordContext.getField('custbody80')) recordContext.getField('custbody80').isDisabled = true; // Se deshabilita
             }
+        }
+
+        function habilitarCamposSublistaPorEstado(scriptContext, recordContext, mode) {
+
+            // DEBUG
+            // SI EL EVENTO OCURRE A NIVEL DE CAMPOS DE CABECERA
+            if (isEmpty(scriptContext.sublistId)) {
+                console.log('validateField!!!', scriptContext);
+            }
+
+            // SI EL EVENTO OCURRE A NIVEL DE SUBLISTA
+            if (!isEmpty(scriptContext.sublistId)) {
+                console.log('validateField!!!', scriptContext)
+            }
+
+            /******************/
+
+            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM
+            if (scriptContext.sublistId == 'item' || scriptContext.fieldId == 'orderstatus') {
+
+                // Deshabilitar campos sublista
+                deshabilitarCamposSublista(recordContext, mode);
+
+                /**
+                 * Funcionalidad para habilitar y deshabilitar campos
+                 * Estado - Values.
+                    - Planificada: A
+                    - Liberada: B
+                 */
+                // Obtener combo "Estado"
+                let comboEstado = recordContext.getValue('orderstatus');
+
+                // Habilitar campos sublista
+                if (comboEstado == 'A') {
+                    habilitarCamposSublista(recordContext, mode);
+                }
+            }
+        }
+
+        function deshabilitarCamposSublista(recordContext, mode) {
+
+            let recordObj = recordContext;
+
+            // Obtener columna y deshabilitarla
+            // https://6462530-sb1.app.netsuite.com/app/help/helpcenter.nl?fid=section_158618597707.html
+            var sublistObj = recordObj.getSublist({
+                sublistId: 'item'
+            });
+            var columnObj = sublistObj.getColumn({
+                fieldId: 'custcol_bio_cant_lis_mat_ini'
+            });
+
+            // Deshabilitar campos
+            columnObj.isDisabled = true;
+        }
+
+        function habilitarCamposSublista(recordContext, mode) {
+
+            let recordObj = recordContext;
+
+            // Obtener columna
+            // https://6462530-sb1.app.netsuite.com/app/help/helpcenter.nl?fid=section_158618597707.html
+            var sublistObj = recordObj.getSublist({
+                sublistId: 'item'
+            });
+            var columnObj = sublistObj.getColumn({
+                fieldId: 'custcol_bio_cant_lis_mat_ini'
+            });
+
+            // Deshabilitar campos
+            columnObj.isDisabled = false;
         }
 
         function validarCamposFirmas(recordContext, mode) {
@@ -531,6 +644,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
         return {
             pageInit: pageInit,
+            validateField: validateField,
             fieldChanged: fieldChanged,
             saveRecord: saveRecord,
             ...dynamicFunctions
