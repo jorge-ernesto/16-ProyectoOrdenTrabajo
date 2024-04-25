@@ -64,6 +64,190 @@ define(['./lib/Bio.Library.Helper', 'N'],
         }
 
         /**
+         * Function to be executed when field is changed.
+         *
+         * @param {Object} scriptContext
+         * @param {Record} scriptContext.currentRecord - Current form record
+         * @param {string} scriptContext.sublistId - Sublist name
+         * @param {string} scriptContext.fieldId - Field name
+         * @param {number} scriptContext.lineNum - Line number. Will be undefined if not a sublist or matrix field
+         * @param {number} scriptContext.columnNum - Line number. Will be undefined if not a matrix field
+         *
+         * @since 2015.2
+         */
+        function fieldChanged(scriptContext) {
+
+            // Obtener el currentRecord y mode
+            let recordContext = scriptContext.currentRecord;
+            let mode = recordContext.getValue('id') ? 'edit' : 'create';
+
+            // Obtener datos
+            let formulario = recordContext.getValue('customform') || null;
+
+            // Modo crear, editar, copiar y formularios
+            if ((mode == 'create' || mode == 'edit' || mode == 'copy') && formularios.includes(Number(formulario))) {
+
+                setValueSubList(scriptContext);
+            }
+        }
+
+        function setValueSubList(scriptContext) {
+
+            // DEBUG
+            // SI EL EVENTO OCURRE A NIVEL DE CAMPOS DE CABECERA
+            if (isEmpty(scriptContext.sublistId)) {
+                console.log('fieldChanged!!!', scriptContext);
+            }
+
+            // SI EL EVENTO OCURRE A NIVEL DE SUBLISTA
+            if (!isEmpty(scriptContext.sublistId)) {
+                console.log('fieldChanged!!!', scriptContext)
+            }
+
+            /******************/
+
+            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LOS CAMPOS REVISION DE LISTA DE MATERIALES Y CANTIDAD
+            if (scriptContext.fieldId == 'billofmaterialsrevision' || scriptContext.fieldId == 'quantity') {
+
+                // Obtener el currentRecord
+                let recordContext = scriptContext.currentRecord;
+                // Obtener data de la sublista
+                let sublistName = 'item';
+                let lineCount = recordContext.getLineCount({ sublistId: sublistName });
+                let itemSublist = recordContext.getSublist({ sublistId: sublistName });
+
+                // Obtener datos
+                let id_revision_lista_materiales = recordContext.getValue('billofmaterialsrevision');
+                let responseData = sendRequest('getDataRevisionListaMateriales', '', '', id_revision_lista_materiales);
+
+                // Debug
+                // console.log('data', { id_revision_lista_materiales, responseData })
+
+                // Validar response
+                if (responseData.status == 'success') {
+
+                    let arrayRevisionListaMateriales = responseData.arrayRevisionListaMateriales;
+
+                    // Recorrer sublista
+                    for (let i = 0; i < lineCount; i++) {
+                        // console.log('i', i);
+
+                        // Seleccionar linea actual de la sublista
+                        recordContext.selectLine({
+                            sublistId: sublistName,
+                            line: i
+                        });
+
+                        // Obtener campos
+                        let columnItem = recordContext.getCurrentSublistValue({
+                            sublistId: 'item',
+                            fieldId: 'item',
+                            line: i
+                        });
+                        let columnComponentYield = recordContext.getCurrentSublistValue({
+                            sublistId: 'item',
+                            fieldId: 'componentyield',
+                            line: i
+                        });
+
+                        // Validar data
+                        if (columnItem && columnComponentYield) {
+
+                            // Obtener cantidad de lista de materiales inicial
+                            let cantidad_bom_ini = calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, arrayRevisionListaMateriales);
+
+                            // Setear datos en linea
+                            recordContext.setCurrentSublistValue({
+                                sublistId: sublistName,
+                                fieldId: 'custcol_bio_cant_lis_mat_ini',
+                                line: i,
+                                value: cantidad_bom_ini,
+                                ignoreFieldChange: true
+                            });
+
+                            // Commit en linea
+                            recordContext.commitLine({
+                                sublistId: sublistName
+                            });
+                        }
+                    }
+                }
+            }
+
+            /******************/
+
+            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM Y CAMPOS ARTICULO, POCENTAJE DE RENDIMIENTO DEL COMPONENTE
+            if (scriptContext.sublistId == 'item' && (scriptContext.fieldId == 'item' || scriptContext.fieldId == 'componentyield')) {
+
+                // Obtener el currentRecord e indice de la linea modificada
+                let recordContext = scriptContext.currentRecord;
+                let line = scriptContext.line;
+
+                // Obtener datos
+                let id_revision_lista_materiales = recordContext.getValue('billofmaterialsrevision');
+                let responseData = sendRequest('getDataRevisionListaMateriales', '', '', id_revision_lista_materiales);
+
+                // Debug
+                // console.log('data', { id_revision_lista_materiales, responseData })
+
+                // Validar response
+                if (responseData.status == 'success') {
+
+                    let arrayRevisionListaMateriales = responseData.arrayRevisionListaMateriales;
+
+                    // Obtener campos
+                    let columnItem = recordContext.getCurrentSublistValue({
+                        sublistId: 'item',
+                        fieldId: 'item',
+                        line: line
+                    });
+                    let columnComponentYield = recordContext.getCurrentSublistValue({
+                        sublistId: 'item',
+                        fieldId: 'componentyield',
+                        line: line
+                    });
+
+                    // Validar data
+                    if (columnItem && columnComponentYield) {
+
+                        // Obtener cantidad de lista de materiales inicial
+                        let cantidad_bom_ini = calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, arrayRevisionListaMateriales);
+
+                        // Setear cantidad de lista de materiales inicial
+                        recordContext.setCurrentSublistValue({
+                            sublistId: 'item',
+                            fieldId: 'custcol_bio_cant_lis_mat_ini',
+                            line: line,
+                            value: cantidad_bom_ini,
+                            ignoreFieldChange: true
+                        });
+                    }
+                }
+            }
+        }
+
+        function calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, arrayRevisionListaMateriales) {
+
+            // Debug
+            console.log('req calculateQuantityBOMInit', { recordContext, columnItem, columnComponentYield, arrayRevisionListaMateriales })
+
+            let fDecimal = 5;
+            let cantidad_bom_ini = 0;
+            let cantidad_bom = arrayRevisionListaMateriales[columnItem]?.['cantidad'] || 0;
+            let cantidad = recordContext.getValue('quantity') || 0;
+            let rend_comp = (columnComponentYield / 100) || 0
+            if (rend_comp != 0) {
+                cantidad_bom_ini = (cantidad_bom * cantidad) / rend_comp;
+                cantidad_bom_ini = Math.round10(cantidad_bom_ini, -fDecimal);
+            }
+
+            // Debug
+            console.log('res calculateQuantityBOMInit', { cantidad_bom_ini, cantidad_bom, cantidad, rend_comp })
+
+            return cantidad_bom_ini;
+        }
+
+        /**
          * Validation function to be executed when record is saved.
          *
          * @param {Object} scriptContext
@@ -142,31 +326,36 @@ define(['./lib/Bio.Library.Helper', 'N'],
             if (mode == 'edit') {
 
                 // Obtener datos
-                let subsidiariaId = recordContext.getValue('subsidiary');
-                let tipoOtId = recordContext.getValue('custbody8');
-                let arrayFlujoFirmas = objHelper.getFlujoFirmas(subsidiariaId, tipoOtId);
+                let responseData = sendRequest('getDataFlujoFirmas');
 
-                // Validar que encontro flujo de firmas
-                if (Object.keys(arrayFlujoFirmas).length > 0) {
+                // Validar response
+                if (responseData.status == 'success') {
 
-                    let ultimoElementoFlujoFirmas = arrayFlujoFirmas[arrayFlujoFirmas.length - 1];
-                    let ultimaFirma = recordContext.getValue(ultimoElementoFlujoFirmas['id_campo_usuario_firma']);
+                    // Obtener datos
+                    let arrayFlujoFirmas = responseData.arrayFlujoFirmas;
 
-                    // Validar campo con data - que se haya firmado
-                    if (ultimaFirma) {
+                    // Validar que encontro flujo de firmas
+                    if (Object.keys(arrayFlujoFirmas).length > 0) {
 
-                        // Cargar Sweet Alert
-                        loadSweetAlertLibrary().then(function () {
+                        let ultimoElementoFlujoFirmas = arrayFlujoFirmas[arrayFlujoFirmas.length - 1];
+                        let ultimaFirma = recordContext.getValue(ultimoElementoFlujoFirmas['id_campo_usuario_firma']);
 
-                            // Ejecutar validacion
-                            Swal.fire({
-                                icon: "error",
-                                title: "Oops...",
-                                text: "Flujo de firmas completo. No puede guardar el registro",
+                        // Validar campo con data - que se haya firmado
+                        if (ultimaFirma) {
+
+                            // Cargar Sweet Alert
+                            loadSweetAlertLibrary().then(function () {
+
+                                // Ejecutar validacion
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Oops...",
+                                    text: "Flujo de firmas completo. No puede guardar el registro",
+                                });
                             });
-                        });
 
-                        return true;
+                            return true;
+                        }
                     }
                 }
             }
@@ -196,7 +385,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
             return suitelet;
         }
 
-        function sendRequestWrapper(method, id_campo_usuario_firma = '', id_campo_fecha_firma = '') {
+        function sendRequestWrapper(method, id_campo_usuario_firma = '', id_campo_fecha_firma = '', id_revision_lista_materiales = '') {
 
             // Cargar Sweet Alert
             loadSweetAlertLibrary().then(function () {
@@ -214,7 +403,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                     if (result.isConfirmed) {
 
                         // Ejecutar peticion
-                        let responseData = sendRequest(method, id_campo_usuario_firma, id_campo_fecha_firma);
+                        let responseData = sendRequest(method, id_campo_usuario_firma, id_campo_fecha_firma, id_revision_lista_materiales);
                         if (responseData.status == 'success' && responseData.urlRecord) {
                             refreshPage(responseData);
                         }
@@ -223,7 +412,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
             });
         }
 
-        function sendRequest(method, id_campo_usuario_firma = '', id_campo_fecha_firma = '') {
+        function sendRequest(method, id_campo_usuario_firma = '', id_campo_fecha_firma = '', id_revision_lista_materiales = '') {
 
             // Obtener el id interno del record proyecto
             let recordContext = currentRecord.get();
@@ -239,7 +428,8 @@ define(['./lib/Bio.Library.Helper', 'N'],
                     _method: method,
                     _workorder_id: workorder_id,
                     _id_campo_usuario_firma: id_campo_usuario_firma,
-                    _id_campo_fecha_firma: id_campo_fecha_firma
+                    _id_campo_fecha_firma: id_campo_fecha_firma,
+                    _id_revision_lista_materiales: id_revision_lista_materiales
                 })
             });
             let responseData = JSON.parse(response.body);
@@ -312,8 +502,36 @@ define(['./lib/Bio.Library.Helper', 'N'],
             }
         }
 
+        /****************** Helper ******************/
+
+        let isEmpty = (value) => {
+
+            if (value === ``) {
+                return true;
+            }
+
+            if (value === null) {
+                return true;
+            }
+
+            if (value === undefined) {
+                return true;
+            }
+
+            if (value === `undefined`) {
+                return true;
+            }
+
+            if (value === `null`) {
+                return true;
+            }
+
+            return false;
+        }
+
         return {
             pageInit: pageInit,
+            fieldChanged: fieldChanged,
             saveRecord: saveRecord,
             ...dynamicFunctions
         };

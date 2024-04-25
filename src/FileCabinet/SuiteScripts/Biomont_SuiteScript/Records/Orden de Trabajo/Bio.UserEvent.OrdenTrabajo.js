@@ -69,18 +69,13 @@ define(['./lib/Bio.Library.Helper', 'N'],
             // Obtener el newRecord y type
             let { newRecord, type } = scriptContext;
 
-            // Debug
-            // let field1 = newRecord.getField('custbody71');
-            // let field2 = newRecord.getField('custbody105');
-            // objHelper.error_log('', { field1, field2 });
-
             // Obtener datos
             let formulario = newRecord.getValue('customform') || null;
 
             // Modo crear y formularios
             if (type == 'create' && formularios.includes(Number(formulario))) {
 
-                // Obtener fecha y hora actual
+                // Setear fecha y hora actual
                 var now = new Date();
                 var datetime = format.format({ value: now, type: format.Type.DATETIME });
 

@@ -45,6 +45,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                     let workorder_id = data._workorder_id || null;
                     let id_campo_usuario_firma = data._id_campo_usuario_firma || null;
                     let id_campo_fecha_firma = data._id_campo_fecha_firma || null;
+                    let id_revision_lista_materiales = data._id_revision_lista_materiales || null;
 
                     // Obtener el record de la Orden de Trabajo
                     let workorderRecord = workorder_id ? record.load({ type: 'workorder', id: workorder_id }) : null;
@@ -85,6 +86,24 @@ define(['./lib/Bio.Library.Helper', 'N'],
                                     method: method,
                                     workorderRecord: workorderRecord,
                                     arrayFlujoFirmas: arrayFlujoFirmas
+                                };
+                            }
+                        } else if (method == 'getDataRevisionListaMateriales') {
+
+                            // Obtener datos
+                            let arrayRevisionListaMateriales = objHelper.getRevisionListaMateriales(id_revision_lista_materiales);
+
+                            // Validar que encontro flujo de firmas
+                            if (Object.keys(arrayRevisionListaMateriales).length > 0) {
+
+                                // objHelper.error_log('data', { method, workorder_id, id_campo_usuario_firma, id_campo_fecha_firma, id_revision_lista_materiales, arrayRevisionListaMateriales });
+
+                                // Respuesta
+                                response = {
+                                    code: '200',
+                                    status: 'success',
+                                    method: method,
+                                    arrayRevisionListaMateriales: arrayRevisionListaMateriales
                                 };
                             }
                         } else if (method == 'firmar' && workorderRecord) {

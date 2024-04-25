@@ -238,6 +238,125 @@ define(['N'],
             return empleadosArray;
         }
 
+        function getRevisionListaMateriales(bomRevisionId) {
+
+            // Crear un array para almacenar los valores
+            let bomRevisionArray = [];
+
+            // Filtro de subsidiaria
+            if (!bomRevisionId) {
+                bomRevisionId = '@NONE@';
+            }
+
+            // Crear una búsqueda para obtener los registros
+            let searchObj = search.create({
+                type: 'bomrevision',
+                columns: [
+                    search.createColumn({
+                        name: "item",
+                        join: "component",
+                        label: "Artículo"
+                    }),
+                    search.createColumn({
+                        name: "quantity",
+                        join: "component",
+                        label: "Cantidad"
+                    }),
+                    search.createColumn({
+                        name: "units",
+                        join: "component",
+                        label: "Unidades"
+                    })
+                ],
+                filters: [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: bomRevisionId
+                    })
+                ]
+            });
+
+            // Ejecutar la búsqueda y recorrer los resultados
+            searchObj.run().each(function (result) {
+                // Obtener informacion
+                let { columns } = result;
+                let articulo_id_interno = result.getValue(columns[0])
+                let articulo_nombre = result.getText(columns[0])
+                let cantidad = result.getValue(columns[1])
+                let unidad_id_interno = result.getValue(columns[2])
+                let unidad_nombre = result.getText(columns[2])
+
+                // Insertar informacion en array
+                bomRevisionArray.push({
+                    articulo: { id_interno: articulo_id_interno, nombre: articulo_nombre },
+                    cantidad: cantidad,
+                    unidad: { id_interno: unidad_id_interno, nombre: unidad_nombre }
+                });
+                return true;
+            });
+
+            /******************/
+
+            // Obtener data en formato agrupado
+            let dataAgrupada = {}; // * Audit: Util, manejo de JSON
+
+            bomRevisionArray.forEach(element => {
+
+                // Obtener variables
+                let articulo_id_interno = element.articulo.id_interno;
+
+                // Agrupar data
+                dataAgrupada[articulo_id_interno] = dataAgrupada[articulo_id_interno] || {};
+                dataAgrupada[articulo_id_interno] = element;
+
+                // Otra forma
+                // dataAgrupada[articulo_id_interno] ??= [];
+                // dataAgrupada[articulo_id_interno] = element;
+            });
+
+            // error_log('getRevisionListaMateriales', { bomRevisionArray, dataAgrupada } );
+            return dataAgrupada;
+        }
+
+        function decimalAdjust(type, value, exp) {
+            // Si el exp no está definido o es cero...
+            if (typeof exp === 'undefined' || +exp === 0) {
+                return Math[type](value);
+            }
+            value = +value;
+            exp = +exp;
+            // Si el valor no es un número o el exp no es un entero...
+            if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0)) {
+                return NaN;
+            }
+            // Shift
+            value = value.toString().split('e');
+            value = Math[type](+(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp)));
+            // Shift back
+            value = value.toString().split('e');
+            return +(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp));
+        }
+
+        // Decimal round
+        if (!Math.round10) {
+            Math.round10 = function (value, exp) {
+                return decimalAdjust('round', value, exp);
+            };
+        }
+        // Decimal floor
+        if (!Math.floor10) {
+            Math.floor10 = function (value, exp) {
+                return decimalAdjust('floor', value, exp);
+            };
+        }
+        // Decimal ceil
+        if (!Math.ceil10) {
+            Math.ceil10 = function (value, exp) {
+                return decimalAdjust('ceil', value, exp);
+            };
+        }
+
         return {
             getUser,
             error_log,
@@ -246,7 +365,8 @@ define(['N'],
             getCountrySubsidiary,
             getFlujoFirmas,
             getEmpleadosPermisoFirmar,
-            getEmpleadosPermisoEliminar
+            getEmpleadosPermisoEliminar,
+            getRevisionListaMateriales
         }
 
     });
