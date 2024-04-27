@@ -46,6 +46,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                     let id_campo_usuario_firma = data._id_campo_usuario_firma || null;
                     let id_campo_fecha_firma = data._id_campo_fecha_firma || null;
                     let id_revision_lista_materiales = data._id_revision_lista_materiales || null;
+                    let id_subsidiaria = data._id_subsidiaria || null;
 
                     // Obtener el record de la Orden de Trabajo
                     let workorderRecord = workorder_id ? record.load({ type: 'workorder', id: workorder_id }) : null;
@@ -86,6 +87,23 @@ define(['./lib/Bio.Library.Helper', 'N'],
                                     method: method,
                                     workorderRecord: workorderRecord,
                                     arrayFlujoFirmas: arrayFlujoFirmas
+                                };
+                            }
+                        } else if (method == 'getDataConfiguracionUnidadMedida') {
+
+                            // Obtener datos
+                            let arrayConfiguracionUnidadMedida = objHelper.getConfiguracionUnidadMedida(id_subsidiaria);
+
+                            // Validar que encontro configuracion de unidad de medida
+                            if (Object.keys(arrayConfiguracionUnidadMedida).length > 0) {
+
+                                // Respuesta
+                                response = {
+                                    code: '200',
+                                    status: 'success',
+                                    method: method,
+                                    workorderRecord: workorderRecord,
+                                    arrayConfiguracionUnidadMedida: arrayConfiguracionUnidadMedida
                                 };
                             }
                         } else if (method == 'getDataRevisionListaMateriales') {

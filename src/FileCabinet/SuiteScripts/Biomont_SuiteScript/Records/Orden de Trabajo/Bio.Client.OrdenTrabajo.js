@@ -150,14 +150,17 @@ define(['./lib/Bio.Library.Helper', 'N'],
                 // Obtener datos
                 let id_revision_lista_materiales = recordContext.getValue('billofmaterialsrevision');
                 let responseData = sendRequest('getDataRevisionListaMateriales', '', '', id_revision_lista_materiales);
+                let id_subsidiaria = recordContext.getValue('subsidiary');
+                let responseData_ = sendRequest('getDataConfiguracionUnidadMedida', '', '', '', id_subsidiaria);
 
                 // Debug
-                // console.log('data', { id_revision_lista_materiales, responseData })
+                // console.log('data', { id_revision_lista_materiales, responseData, id_subsidiaria, responseData_ });
 
                 // Validar response
                 if (responseData.status == 'success') {
 
                     let arrayRevisionListaMateriales = responseData.arrayRevisionListaMateriales;
+                    let arrayConfiguracionUnidadMedida = responseData_.arrayConfiguracionUnidadMedida;
 
                     // Recorrer sublista
                     for (let i = 0; i < lineCount; i++) {
@@ -180,12 +183,17 @@ define(['./lib/Bio.Library.Helper', 'N'],
                             fieldId: 'componentyield',
                             line: i
                         });
+                        let columnUnits = recordContext.getCurrentSublistValue({
+                            sublistId: 'item',
+                            fieldId: 'units',
+                            line: i
+                        });
 
                         // Validar data
-                        if (columnItem && columnComponentYield) {
+                        if (columnItem && columnComponentYield && columnUnits) {
 
                             // Obtener cantidad de lista de materiales inicial
-                            let cantidad_bom_ini = calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, arrayRevisionListaMateriales);
+                            let cantidad_bom_ini = calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, columnUnits, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida);
 
                             // Setear cantidad de lista de materiales inicial
                             recordContext.setCurrentSublistValue({
@@ -208,7 +216,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
             /******************/
 
             // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM Y CAMPOS ARTICULO, POCENTAJE DE RENDIMIENTO DEL COMPONENTE
-            if (scriptContext.sublistId == 'item' && (scriptContext.fieldId == 'item' || scriptContext.fieldId == 'componentyield')) {
+            if (scriptContext.sublistId == 'item' && (scriptContext.fieldId == 'item' || scriptContext.fieldId == 'componentyield' || scriptContext.fieldId == 'units')) {
 
                 // Obtener data de la sublista
                 let line = scriptContext.line;
@@ -216,14 +224,17 @@ define(['./lib/Bio.Library.Helper', 'N'],
                 // Obtener datos
                 let id_revision_lista_materiales = recordContext.getValue('billofmaterialsrevision');
                 let responseData = sendRequest('getDataRevisionListaMateriales', '', '', id_revision_lista_materiales);
+                let id_subsidiaria = recordContext.getValue('subsidiary');
+                let responseData_ = sendRequest('getDataConfiguracionUnidadMedida', '', '', '', id_subsidiaria);
 
                 // Debug
-                // console.log('data', { id_revision_lista_materiales, responseData })
+                // console.log('data', { id_revision_lista_materiales, responseData, id_subsidiaria, responseData_ });
 
                 // Validar response
                 if (responseData.status == 'success') {
 
                     let arrayRevisionListaMateriales = responseData.arrayRevisionListaMateriales;
+                    let arrayConfiguracionUnidadMedida = responseData_.arrayConfiguracionUnidadMedida;
 
                     // Obtener campos
                     let columnItem = recordContext.getCurrentSublistValue({
@@ -236,15 +247,20 @@ define(['./lib/Bio.Library.Helper', 'N'],
                         fieldId: 'componentyield',
                         line: line
                     });
+                    let columnUnits = recordContext.getCurrentSublistValue({
+                        sublistId: 'item',
+                        fieldId: 'units',
+                        line: line
+                    });
 
                     // Validar data
-                    if (columnItem && columnComponentYield) {
+                    if (columnItem && columnComponentYield && columnUnits) {
 
                         // Solo realiza el calculo cuando encuentra el articulo en la revision de lista de materiales
                         if (arrayRevisionListaMateriales[columnItem]) {
 
                             // Obtener cantidad de lista de materiales inicial
-                            let cantidad_bom_ini = calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, arrayRevisionListaMateriales);
+                            let cantidad_bom_ini = calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, columnUnits, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida);
 
                             // Setear cantidad de lista de materiales inicial
                             recordContext.setCurrentSublistValue({
@@ -269,19 +285,27 @@ define(['./lib/Bio.Library.Helper', 'N'],
             }
         }
 
-        function calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, arrayRevisionListaMateriales) {
+        function calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, columnUnits, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida) {
 
             // Debug
-            console.log('req calculateQuantityBOMInit', { recordContext, columnItem, columnComponentYield, arrayRevisionListaMateriales })
+            console.log('req calculateQuantityBOMInit', { recordContext, columnItem, columnComponentYield, columnUnits, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida })
 
+            // Calcular la cantidad de lista de materiales inicial - redondeada a 5 decimales
             let fDecimal = 5;
             let cantidad_bom_ini = 0;
-            let cantidad_bom = arrayRevisionListaMateriales[columnItem]?.['cantidad_bom'] || 0;
+            let cantidad_bom = arrayRevisionListaMateriales?.[columnItem]?.['cantidad_bom'] || 0;
             let cantidad = recordContext.getValue('quantity') || 0;
             let rend_comp = (columnComponentYield / 100) || 0
             if (rend_comp != 0) {
                 cantidad_bom_ini = (cantidad_bom * cantidad) / rend_comp;
                 cantidad_bom_ini = Math.round10(cantidad_bom_ini, -fDecimal);
+            }
+
+            // Calcular la cantidad de lista de materiales inicial - redondeada al entero más cercano hacia arriba
+            if (arrayConfiguracionUnidadMedida?.[columnUnits]?.['redondear_hacia_arriba'] == true) {
+                cantidad_bom_ini = Math.ceil(cantidad_bom_ini);
+            } else {
+                cantidad_bom_ini = cantidad_bom_ini;
             }
 
             // Debug
@@ -498,7 +522,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
             return suitelet;
         }
 
-        function sendRequestWrapper(method, id_campo_usuario_firma = '', id_campo_fecha_firma = '', id_revision_lista_materiales = '') {
+        function sendRequestWrapper(method, id_campo_usuario_firma = '', id_campo_fecha_firma = '', id_revision_lista_materiales = '', id_subsidiaria = '') {
 
             // Cargar Sweet Alert
             loadSweetAlertLibrary().then(function () {
@@ -516,7 +540,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                     if (result.isConfirmed) {
 
                         // Ejecutar peticion
-                        let responseData = sendRequest(method, id_campo_usuario_firma, id_campo_fecha_firma, id_revision_lista_materiales);
+                        let responseData = sendRequest(method, id_campo_usuario_firma, id_campo_fecha_firma, id_revision_lista_materiales, id_subsidiaria);
                         if (responseData.status == 'success' && responseData.urlRecord) {
                             refreshPage(responseData);
                         }
@@ -525,7 +549,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
             });
         }
 
-        function sendRequest(method, id_campo_usuario_firma = '', id_campo_fecha_firma = '', id_revision_lista_materiales = '') {
+        function sendRequest(method, id_campo_usuario_firma = '', id_campo_fecha_firma = '', id_revision_lista_materiales = '', id_subsidiaria = '') {
 
             // Obtener el id interno del record proyecto
             let recordContext = currentRecord.get();
@@ -542,7 +566,8 @@ define(['./lib/Bio.Library.Helper', 'N'],
                     _workorder_id: workorder_id,
                     _id_campo_usuario_firma: id_campo_usuario_firma,
                     _id_campo_fecha_firma: id_campo_fecha_firma,
-                    _id_revision_lista_materiales: id_revision_lista_materiales
+                    _id_revision_lista_materiales: id_revision_lista_materiales,
+                    _id_subsidiaria: id_subsidiaria
                 })
             });
             let responseData = JSON.parse(response.body);
@@ -564,7 +589,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
         let dynamicFunctions = {};
 
-        // Solicitud HTTP
+        // Obtener datos
         let responseData = sendRequest('getDataFlujoFirmas');
 
         // Validar response
