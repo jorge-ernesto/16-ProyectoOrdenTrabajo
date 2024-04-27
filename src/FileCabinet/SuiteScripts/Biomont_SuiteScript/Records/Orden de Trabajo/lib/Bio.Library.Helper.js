@@ -144,6 +144,167 @@ define(['N'],
             return flujoFirmasArray;
         }
 
+        function getConfiguracionUnidadMedida(subsidiariaId) {
+
+            // Crear un array para almacenar los valores
+            var configuracionUnidadMedidaArray = [];
+
+            // Filtro de subsidiaria
+            if (!subsidiariaId) {
+                subsidiariaId = '@NONE@';
+            }
+
+            // Crear una búsqueda para obtener los registros
+            var searchObj = search.create({
+                type: 'customrecord_bio_conf_ot_unimed',
+                columns: [
+                    'internalid',
+                    'custrecord_bio_ot_unimed_subsidiaria',
+                    search.createColumn({
+                        name: "custrecord_bio_ot_unimed_id_unidad",
+                        sort: search.Sort.ASC,
+                        label: "ID Unidad"
+                    }),
+                    'custrecord_bio_ot_unimed_redhacarr',
+                ],
+                filters: [
+                    search.createFilter({
+                        name: 'isinactive',
+                        operator: search.Operator.IS,
+                        values: 'F' // F para registros activos
+                    }),
+                    search.createFilter({
+                        name: 'custrecord_bio_ot_unimed_subsidiaria',
+                        operator: search.Operator.ANYOF,
+                        values: subsidiariaId
+                    })
+                ]
+            });
+
+            // Ejecutar la búsqueda y recorrer los resultados
+            searchObj.run().each(function (result) {
+                // Obtener informacion
+                let { columns } = result;
+                let configuracion_unidad_medida_id_interno = result.getValue(columns[0]);
+                let subsidiaria_id_interno = result.getValue(columns[1]);
+                let subsidiaria_nombre = result.getText(columns[1]);
+                let id_unidad = result.getValue(columns[2]);
+                let redondear_hacia_arriba = result.getValue(columns[3]);
+
+                // Insertar informacion en array
+                configuracionUnidadMedidaArray.push({
+                    configuracion_unidad_medida: { id_interno: configuracion_unidad_medida_id_interno },
+                    subsidiaria: { id_interno: subsidiaria_id_interno, nombre: subsidiaria_nombre },
+                    id_unidad: id_unidad,
+                    redondear_hacia_arriba: redondear_hacia_arriba
+                });
+                return true;
+            });
+
+            /******************/
+
+            // Obtener data en formato agrupado
+            let dataAgrupada = {}; // * Audit: Util, manejo de JSON
+
+            configuracionUnidadMedidaArray.forEach(element => {
+
+                // Obtener variables
+                let id_unidad = element.id_unidad
+
+                // Agrupar data
+                dataAgrupada[id_unidad] = dataAgrupada[id_unidad] || {};
+                dataAgrupada[id_unidad] = element;
+
+                // Otra forma
+                // dataAgrupada[id_unidad] ??= [];
+                // dataAgrupada[id_unidad] = element;
+            });
+
+            // error_log('getConfiguracionUnidadMedida', { configuracionUnidadMedidaArray, dataAgrupada } );
+            return dataAgrupada;
+        }
+
+        function getRevisionListaMateriales(bomRevisionId) {
+
+            // Crear un array para almacenar los valores
+            let bomRevisionArray = [];
+
+            // Filtro de subsidiaria
+            if (!bomRevisionId) {
+                bomRevisionId = '@NONE@';
+            }
+
+            // Crear una búsqueda para obtener los registros
+            let searchObj = search.create({
+                type: 'bomrevision',
+                columns: [
+                    search.createColumn({
+                        name: "item",
+                        join: "component",
+                        label: "Artículo"
+                    }),
+                    search.createColumn({
+                        name: "bomquantity",
+                        join: "component",
+                        label: "Cantidad BOM"
+                    }),
+                    search.createColumn({
+                        name: "units",
+                        join: "component",
+                        label: "Unidades"
+                    })
+                ],
+                filters: [
+                    search.createFilter({
+                        name: 'internalid',
+                        operator: search.Operator.ANYOF,
+                        values: bomRevisionId
+                    })
+                ]
+            });
+
+            // Ejecutar la búsqueda y recorrer los resultados
+            searchObj.run().each(function (result) {
+                // Obtener informacion
+                let { columns } = result;
+                let articulo_id_interno = result.getValue(columns[0])
+                let articulo_nombre = result.getText(columns[0])
+                let cantidad_bom = result.getValue(columns[1])
+                let unidad_id_interno = result.getValue(columns[2])
+                let unidad_nombre = result.getText(columns[2])
+
+                // Insertar informacion en array
+                bomRevisionArray.push({
+                    articulo: { id_interno: articulo_id_interno, nombre: articulo_nombre },
+                    cantidad_bom: cantidad_bom,
+                    unidad: { id_interno: unidad_id_interno, nombre: unidad_nombre }
+                });
+                return true;
+            });
+
+            /******************/
+
+            // Obtener data en formato agrupado
+            let dataAgrupada = {}; // * Audit: Util, manejo de JSON
+
+            bomRevisionArray.forEach(element => {
+
+                // Obtener variables
+                let articulo_id_interno = element.articulo.id_interno;
+
+                // Agrupar data
+                dataAgrupada[articulo_id_interno] = dataAgrupada[articulo_id_interno] || {};
+                dataAgrupada[articulo_id_interno] = element;
+
+                // Otra forma
+                // dataAgrupada[articulo_id_interno] ??= [];
+                // dataAgrupada[articulo_id_interno] = element;
+            });
+
+            // error_log('getRevisionListaMateriales', { bomRevisionArray, dataAgrupada } );
+            return dataAgrupada;
+        }
+
         function getEmpleadosPermisoFirmar(subsidiariaId, centroCostoId) {
 
             // Crear un array para almacenar los valores
@@ -238,87 +399,6 @@ define(['N'],
             return empleadosArray;
         }
 
-        function getRevisionListaMateriales(bomRevisionId) {
-
-            // Crear un array para almacenar los valores
-            let bomRevisionArray = [];
-
-            // Filtro de subsidiaria
-            if (!bomRevisionId) {
-                bomRevisionId = '@NONE@';
-            }
-
-            // Crear una búsqueda para obtener los registros
-            let searchObj = search.create({
-                type: 'bomrevision',
-                columns: [
-                    search.createColumn({
-                        name: "item",
-                        join: "component",
-                        label: "Artículo"
-                    }),
-                    search.createColumn({
-                        name: "bomquantity",
-                        join: "component",
-                        label: "Cantidad BOM"
-                    }),
-                    search.createColumn({
-                        name: "units",
-                        join: "component",
-                        label: "Unidades"
-                    })
-                ],
-                filters: [
-                    search.createFilter({
-                        name: 'internalid',
-                        operator: search.Operator.ANYOF,
-                        values: bomRevisionId
-                    })
-                ]
-            });
-
-            // Ejecutar la búsqueda y recorrer los resultados
-            searchObj.run().each(function (result) {
-                // Obtener informacion
-                let { columns } = result;
-                let articulo_id_interno = result.getValue(columns[0])
-                let articulo_nombre = result.getText(columns[0])
-                let cantidad_bom = result.getValue(columns[1])
-                let unidad_id_interno = result.getValue(columns[2])
-                let unidad_nombre = result.getText(columns[2])
-
-                // Insertar informacion en array
-                bomRevisionArray.push({
-                    articulo: { id_interno: articulo_id_interno, nombre: articulo_nombre },
-                    cantidad_bom: cantidad_bom,
-                    unidad: { id_interno: unidad_id_interno, nombre: unidad_nombre }
-                });
-                return true;
-            });
-
-            /******************/
-
-            // Obtener data en formato agrupado
-            let dataAgrupada = {}; // * Audit: Util, manejo de JSON
-
-            bomRevisionArray.forEach(element => {
-
-                // Obtener variables
-                let articulo_id_interno = element.articulo.id_interno;
-
-                // Agrupar data
-                dataAgrupada[articulo_id_interno] = dataAgrupada[articulo_id_interno] || {};
-                dataAgrupada[articulo_id_interno] = element;
-
-                // Otra forma
-                // dataAgrupada[articulo_id_interno] ??= [];
-                // dataAgrupada[articulo_id_interno] = element;
-            });
-
-            // error_log('getRevisionListaMateriales', { bomRevisionArray, dataAgrupada } );
-            return dataAgrupada;
-        }
-
         function decimalAdjust(type, value, exp) {
             // Si el exp no está definido o es cero...
             if (typeof exp === 'undefined' || +exp === 0) {
@@ -366,6 +446,7 @@ define(['N'],
             getFlujoFirmas,
             getEmpleadosPermisoFirmar,
             getEmpleadosPermisoEliminar,
+            getConfiguracionUnidadMedida,
             getRevisionListaMateriales
         }
 
