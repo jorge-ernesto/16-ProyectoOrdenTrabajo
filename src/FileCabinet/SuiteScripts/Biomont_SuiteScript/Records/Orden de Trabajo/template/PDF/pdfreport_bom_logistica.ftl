@@ -190,7 +190,7 @@
                 </tr>
                 <tr>
                     <td colspan="1" align="center"><b>Emitido por</b></td>
-                    <#if params.workorder_data.tipo_ot != '3'>
+                    <#if !(params.workorder_data.tipo_ot == '3' || params.workorder_data.tipo_ot == '4' || params.workorder_data.tipo_ot == '6')>
                         <td colspan="1" align="center"><b>Ajustado por</b></td>
                     </#if>
                     <td colspan="1" align="center"><b>Verificado por</b></td>
@@ -200,7 +200,7 @@
                         <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.emitido_por}</b></p>
                         <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.fecha_firma_emitido}</b></p>
                     </td>
-                    <#if params.workorder_data.tipo_ot != '3'>
+                    <#if !(params.workorder_data.tipo_ot == '3' || params.workorder_data.tipo_ot == '4' || params.workorder_data.tipo_ot == '6')>
                         <td colspan="1" align="center" valign="middle" style="height: 60px;">
                             <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.ajustado_por_almacen}</b></p>
                             <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.fecha_firma_almacen}</b></p>
@@ -213,7 +213,7 @@
                 </tr>
                 <tr>
                     <td colspan="1" align="center"><b>Logística</b></td>
-                    <#if params.workorder_data.tipo_ot != '3'>
+                    <#if !(params.workorder_data.tipo_ot == '3' || params.workorder_data.tipo_ot == '4' || params.workorder_data.tipo_ot == '6')>
                         <td colspan="1" align="center"><b>Almacén</b></td>
                     </#if>
                     <td colspan="1" align="center"><b>Verificado por</b></td>

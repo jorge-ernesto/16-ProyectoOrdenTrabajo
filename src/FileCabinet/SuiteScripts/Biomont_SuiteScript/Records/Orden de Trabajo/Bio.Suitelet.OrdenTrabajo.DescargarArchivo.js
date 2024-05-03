@@ -84,6 +84,12 @@ define(['./lib/Bio.Library.Helper', 'N'],
             let dataRevisionListaMateriales = objHelper.getRevisionListaMateriales(bomrevision_id);
             let dataDetalleOrdenTrabajo_principioActivo = objHelper.getDetalleOrdenTrabajo_principioActivo(dataDetalleOrdenTrabajo, dataRevisionListaMateriales);
 
+            // Procesar informacion
+            let fecha_registro = workorderRecord.getText('trandate');
+            let fecha_fabricacion = workorderRecord.getText('custbody126');
+            fecha_fabricacion = fecha_fabricacion ? fecha_fabricacion.split('/')[1] + '-' + fecha_fabricacion.split('/')[2] : '';
+            let fecha_expira = workorderRecord.getText('custbodybio_cam_fechacaducidad');
+
             // Debug
             // objHelper.error_log('data', { dataDetalleOrdenTrabajo, dataRevisionListaMateriales, dataDetalleOrdenTrabajo_principioActivo });
 
@@ -100,10 +106,10 @@ define(['./lib/Bio.Library.Helper', 'N'],
                 cantidad: workorderRecord.getValue('quantity'),
                 unidades: workorderRecord.getText('units'),
                 cantidad_producir: workorderRecord.getValue('quantity') + ' ' + workorderRecord.getText('units'),
-                fecha_registro: workorderRecord.getValue('trandate'),
+                fecha_registro: fecha_registro,
                 lote: workorderRecord.getValue('custbodybio_cam_lote'),
-                fecha_fabricacion: workorderRecord.getValue('custbody126'),
-                fecha_expira: workorderRecord.getValue('custbodybio_cam_fechacaducidad'),
+                fecha_fabricacion: fecha_fabricacion,
+                fecha_expira: fecha_expira,
                 linea: workorderRecord.getValue('custbody41'),
                 observaciones: workorderRecord.getValue('memo'),
                 // Detalle

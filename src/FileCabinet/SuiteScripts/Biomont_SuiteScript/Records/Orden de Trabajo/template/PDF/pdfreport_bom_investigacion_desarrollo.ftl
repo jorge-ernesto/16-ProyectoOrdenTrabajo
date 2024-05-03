@@ -100,7 +100,7 @@
 					<th rowspan="4" colspan="1" align="left" valign="middle">
 						<img src='${params.img_base64}'></img>
 						<b>Laboratorios Biomont S.A.</b><br />
-                        <b>PP000000060 BIOMISOL ADE</b>
+                        <b>${params.workorder_data.codigo_producto} ${params.workorder_data.producto}</b>
 					</th>
 					<th colspan="5" align="right" valign="middle">
 						<span class="fs18"><b>ORDEN DE PRODUCCIÓN</b></span>
@@ -108,7 +108,7 @@
 				</tr>
                 <tr>
                     <th colspan="5" align="right" valign="middle">
-						<span class="fs15"><b>OP N:</b> 004088</span>
+						<span class="fs15"><b>OP N:</b> ${params.workorder_data.numero_ot}</span>
 					</th>
                 </tr>
                 <tr>
@@ -128,7 +128,7 @@
                 <th colspan="1" align="right"><b>Linea:</b></th>
                 <th colspan="1">${params.workorder_data.linea}</th>
                 <th colspan="1" align="right"><b>F. Emision OP:</b></th>
-                <th colspan="1">${params.workorder_data.fecha}</th>
+                <th colspan="1">${params.workorder_data.fecha_registro}</th>
                 <th colspan="1"></th>
             </tr>
             <tr>
