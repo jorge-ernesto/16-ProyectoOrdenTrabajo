@@ -202,6 +202,13 @@ define(['./lib/Bio.Library.Helper', 'N'],
                     return false;
                 });
             }
+
+            /****************** Mostrar botones para imprimir PDF ******************/
+            form.addButton({
+                id: 'custpage_button_descargar_pdf',
+                label: 'Imprimir BOM',
+                functionName: 'descargarPDF_imprimirBOM()'
+            });
         }
 
         return { beforeLoad, beforeSubmit, afterSubmit };

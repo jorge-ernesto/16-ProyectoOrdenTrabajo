@@ -23,6 +23,9 @@ define(['./lib/Bio.Library.Helper', 'N'],
         const scriptId = 'customscript_bio_sl_api_orden_trabajo';
         const deployId = 'customdeploy_bio_sl_api_orden_trabajo';
 
+        const scriptDownloadId = 'customscript_bio_sl_ord_trab_des_arc';
+        const deployDownloadId = 'customdeploy_bio_sl_ord_trab_des_arc';
+
         /**
          * Formularios
          *
@@ -293,9 +296,16 @@ define(['./lib/Bio.Library.Helper', 'N'],
             // Calcular la cantidad de lista de materiales inicial - redondeada a 5 decimales
             let fDecimal = 5;
             let cantidad_bom_ini = 0;
-            let cantidad_bom = arrayRevisionListaMateriales?.[columnItem]?.['cantidad_bom'] || 0;
-            let cantidad = recordContext.getValue('quantity') || 0;
-            let rend_comp = (columnComponentYield / 100) || 0
+            let cantidad_bom = arrayRevisionListaMateriales?.[columnItem]?.['cantidad_bom'];
+            let cantidad = recordContext.getValue('quantity');
+            let rend_comp = (columnComponentYield / 100);
+
+            // Procesar informacion
+            // Informacion que se utiliza para calcular la cantidad de lista de materiales inicial - si no hay data, lo tomara como 0
+            cantidad_bom = parseFloat(cantidad_bom) || 0;
+            cantidad = parseFloat(cantidad) || 0;
+            rend_comp = parseFloat(rend_comp) || 0;
+
             if (rend_comp != 0) {
                 cantidad_bom_ini = (cantidad_bom * cantidad) / rend_comp;
                 cantidad_bom_ini = Math.round10(cantidad_bom_ini, -fDecimal);
@@ -640,6 +650,32 @@ define(['./lib/Bio.Library.Helper', 'N'],
             }
         }
 
+        /****************** Funciones para imprimir PDF ******************/
+
+        function descargarPDF_imprimirBOM() {
+
+            // Obtener el id interno del record proyecto
+            let recordContext = currentRecord.get();
+            let workorder_id = recordContext.getValue('id');
+
+            // Obtener url del Suitelet mediante ID del Script y ID del Despliegue
+            let suitelet = url.resolveScript({
+                deploymentId: deployDownloadId,
+                scriptId: scriptDownloadId,
+                params: {
+                    _button: 'pdf',
+                    _type: 'imprimir_bom',
+                    _workorder_id: workorder_id
+                }
+            });
+
+            // Evitar que aparezca el mensaje 'Estas seguro que deseas salir de la pantalla'
+            setWindowChanged(window, false);
+
+            // Abrir url
+            window.open(suitelet);
+        }
+
         /****************** Helper ******************/
 
         let isEmpty = (value) => {
@@ -672,7 +708,8 @@ define(['./lib/Bio.Library.Helper', 'N'],
             validateField: validateField,
             fieldChanged: fieldChanged,
             saveRecord: saveRecord,
-            ...dynamicFunctions
+            ...dynamicFunctions,
+            descargarPDF_imprimirBOM
         };
 
     });
