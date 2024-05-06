@@ -21,7 +21,7 @@ define(['N'],
             throw new Error(`${message}`);
         }
 
-        /******************/
+        /****************** Validacion ******************/
 
         function getCountrySubsidiary(subsidiaryId) {
             // Cargar el registro de la subsidiaria
@@ -36,21 +36,21 @@ define(['N'],
             return countrySubsidiary;
         }
 
-        /******************/
+        /****************** Records personalizados ******************/
 
-        function getFlujoFirmas(subsidiariaId, tipoOtId) {
+        function getFlujoFirmas(subsidiaryId, wordOrderTypeId) {
 
             // Crear un array para almacenar los valores
             var flujoFirmasArray = [];
 
             // Filtro de subsidiaria
-            if (!subsidiariaId) {
-                subsidiariaId = '@NONE@';
+            if (!subsidiaryId) {
+                subsidiaryId = '@NONE@';
             }
 
             // Filtro de tipo de orden de trabajo
-            if (!tipoOtId) {
-                tipoOtId = '@NONE@';
+            if (!wordOrderTypeId) {
+                wordOrderTypeId = '@NONE@';
             }
 
             // Crear una búsqueda para obtener los registros
@@ -88,12 +88,12 @@ define(['N'],
                     search.createFilter({
                         name: 'custrecord_bio_ot_flufir_subsidiaria',
                         operator: search.Operator.ANYOF,
-                        values: subsidiariaId
+                        values: subsidiaryId
                     }),
                     search.createFilter({
                         name: 'custrecord_bio_ot_flufir_tipo_ot',
                         operator: search.Operator.ANYOF,
-                        values: tipoOtId
+                        values: wordOrderTypeId
                     })
                 ]
             });
@@ -122,7 +122,7 @@ define(['N'],
 
                 // Insertar informacion en array
                 flujoFirmasArray.push({
-                    flujo_firmas_id_interno: { id_interno: flujo_firmas_id_interno },
+                    flujo_firmas: { id_interno: flujo_firmas_id_interno },
                     subsidiaria: { id_interno: subsidiaria_id_interno, nombre: subsidiaria_nombre },
                     tipo_ot: { id_interno: tipo_ot_id_interno, nombre: tipo_ot_nombre },
                     centro_costo: { id_interno: centro_costo_id_interno, nombre: centro_costo_nombre },
@@ -144,14 +144,108 @@ define(['N'],
             return flujoFirmasArray;
         }
 
-        function getConfiguracionUnidadMedida(subsidiariaId) {
+        function getEmpleadosPermisoFirmar(subsidiaryId, classId) {
+
+            // Crear un array para almacenar los valores
+            var empleadosArray = [];
+
+            // Crear una búsqueda para obtener los registros
+            var searchObj = search.create({
+                type: 'customrecord_bio_conf_ot_emp',
+                columns: [
+                    'custrecord_bio_ot_emp_subsidiaria',
+                    'custrecord_bio_ot_emp_centro_costo',
+                    'custrecord_bio_ot_emp_empleado'
+                ],
+                filters: [
+                    search.createFilter({
+                        name: 'isinactive',
+                        operator: search.Operator.IS,
+                        values: 'F' // F para registros activos
+                    }),
+                    search.createFilter({
+                        name: 'custrecord_bio_ot_emp_subsidiaria',
+                        operator: search.Operator.ANYOF,
+                        values: subsidiaryId
+                    }),
+                    search.createFilter({
+                        name: 'custrecord_bio_ot_emp_centro_costo',
+                        operator: search.Operator.ANYOF,
+                        values: classId
+                    }),
+                    search.createFilter({
+                        name: 'custrecord_bio_ot_emp_perm_firmar',
+                        operator: search.Operator.IS,
+                        values: 'T'
+                    })
+                ]
+            });
+
+            // Ejecutar la búsqueda y recorrer los resultados
+            searchObj.run().each(function (result) {
+                var empleadoValue = result.getValue('custrecord_bio_ot_emp_empleado');
+                empleadosArray.push(Number(empleadoValue));
+                return true;
+            });
+
+            return empleadosArray;
+        }
+
+        function getEmpleadosPermisoEliminar(subsidiaryId, classId) {
+
+            // Crear un array para almacenar los valores
+            var empleadosArray = [];
+
+            // Crear una búsqueda para obtener los registros
+            var searchObj = search.create({
+                type: 'customrecord_bio_conf_ot_emp',
+                columns: [
+                    'custrecord_bio_ot_emp_subsidiaria',
+                    'custrecord_bio_ot_emp_centro_costo',
+                    'custrecord_bio_ot_emp_empleado'
+                ],
+                filters: [
+                    search.createFilter({
+                        name: 'isinactive',
+                        operator: search.Operator.IS,
+                        values: 'F' // F para registros activos
+                    }),
+                    search.createFilter({
+                        name: 'custrecord_bio_ot_emp_subsidiaria',
+                        operator: search.Operator.ANYOF,
+                        values: subsidiaryId
+                    }),
+                    search.createFilter({
+                        name: 'custrecord_bio_ot_emp_centro_costo',
+                        operator: search.Operator.ANYOF,
+                        values: classId
+                    }),
+                    search.createFilter({
+                        name: 'custrecord_bio_ot_emp_perm_eliminar',
+                        operator: search.Operator.IS,
+                        values: 'T'
+                    })
+                ]
+            });
+
+            // Ejecutar la búsqueda y recorrer los resultados
+            searchObj.run().each(function (result) {
+                var empleadoValue = result.getValue('custrecord_bio_ot_emp_empleado');
+                empleadosArray.push(Number(empleadoValue));
+                return true;
+            });
+
+            return empleadosArray;
+        }
+
+        function getConfiguracionUnidadMedida(subsidiaryId) {
 
             // Crear un array para almacenar los valores
             var configuracionUnidadMedidaArray = [];
 
             // Filtro de subsidiaria
-            if (!subsidiariaId) {
-                subsidiariaId = '@NONE@';
+            if (!subsidiaryId) {
+                subsidiaryId = '@NONE@';
             }
 
             // Crear una búsqueda para obtener los registros
@@ -176,7 +270,7 @@ define(['N'],
                     search.createFilter({
                         name: 'custrecord_bio_ot_unimed_subsidiaria',
                         operator: search.Operator.ANYOF,
-                        values: subsidiariaId
+                        values: subsidiaryId
                     })
                 ]
             });
@@ -224,10 +318,89 @@ define(['N'],
             return dataAgrupada;
         }
 
+        /****************** Data ******************/
+
+        function getDetalleOrdenTrabajo(wordOrderId) {
+
+            // Crear un array para almacenar los valores
+            let detalleOrdenTrabajoArray = [];
+
+            // Filtro de subsidiaria
+            if (!wordOrderId) {
+                wordOrderId = '@NONE@';
+            }
+
+            // Crear una búsqueda para obtener los registros
+            let searchObj = search.create({
+                type: 'workorder',
+                columns: [
+                    search.createColumn({ name: "internalid", label: "ID interno" }),
+                    search.createColumn({
+                        name: "internalid",
+                        join: "item",
+                        label: "Artículo : ID interno"
+                    }),
+                    search.createColumn({
+                        name: "itemid",
+                        join: "item",
+                        label: "Artículo : Nombre"
+                    }),
+                    search.createColumn({
+                        name: "displayname",
+                        join: "item",
+                        label: "Artículo : Nombre para mostrar"
+                    }),
+                    search.createColumn({ name: "custcol_bio_cant_lis_mat_ini", label: "Cantidad de Lista de Materiales Inicial" }),
+                    search.createColumn({ name: "quantity", label: "Cantidad" }),
+                    search.createColumn({ name: "unitabbreviation", label: "Unidades" })
+                ],
+                filters: [
+                    ["mainline", "is", "F"],
+                    "AND",
+                    ["type", "anyof", "WorkOrd"],
+                    "AND",
+                    ["internalid", "anyof", wordOrderId],
+                    "AND",
+                    ["unit", "noneof", "@NONE@"]
+                ]
+            });
+
+            // Ejecutar la búsqueda y recorrer los resultados
+            searchObj.run().each(function (result) {
+                // Obtener informacion
+                let { columns } = result;
+                let orden_trabajo_id_interno = result.getValue(columns[0]);
+                let articulo_id_interno = result.getValue(columns[1])
+                let articulo_codigo = result.getValue(columns[2]);
+                let articulo_descripcion = result.getValue(columns[3]);
+                let cantidad_generada = result.getValue(columns[4]);
+                let cantidad_entregada = result.getValue(columns[5]);
+                let unitabbreviation = result.getValue(columns[6]);
+
+                // Procesar informacion
+                // Informacion que se utiliza en el PDF - si no hay data, mostrara una cadena de texto vacia
+                cantidad_generada = parseFloat(cantidad_generada) || '';
+                cantidad_entregada = parseFloat(cantidad_entregada) || '';
+
+                // Insertar informacion en array
+                detalleOrdenTrabajoArray.push({
+                    orden_trabajo: { id_interno: orden_trabajo_id_interno },
+                    articulo: { id_interno: articulo_id_interno, codigo: articulo_codigo, descripcion: articulo_descripcion },
+                    cantidad_generada,
+                    cantidad_entregada,
+                    unitabbreviation
+                });
+                return true;
+            });
+
+            // error_log('getDetalleOrdenTrabajo', detalleOrdenTrabajoArray);
+            return detalleOrdenTrabajoArray;
+        }
+
         function getRevisionListaMateriales(bomRevisionId) {
 
             // Crear un array para almacenar los valores
-            let bomRevisionArray = [];
+            let revisionListaMaterialesArray = [];
 
             // Filtro de subsidiaria
             if (!bomRevisionId) {
@@ -239,27 +412,33 @@ define(['N'],
                 type: 'bomrevision',
                 columns: [
                     search.createColumn({
+                        name: "internalid",
+                        join: "component",
+                        label: "Componente : ID interno"
+                    }),
+                    search.createColumn({
                         name: "item",
                         join: "component",
-                        label: "Artículo"
+                        label: "Componente : Artículo"
                     }),
                     search.createColumn({
                         name: "bomquantity",
                         join: "component",
-                        label: "Cantidad BOM"
+                        label: "Componente : Cantidad de BoM"
                     }),
                     search.createColumn({
                         name: "units",
                         join: "component",
-                        label: "Unidades"
+                        label: "Componente : Unidades"
+                    }),
+                    search.createColumn({
+                        name: "custrecord184",
+                        join: "component",
+                        label: "Componente : BIO_CAM_PRINCIPIO_ACTIVO (Personalizar)"
                     })
                 ],
                 filters: [
-                    search.createFilter({
-                        name: 'internalid',
-                        operator: search.Operator.ANYOF,
-                        values: bomRevisionId
-                    })
+                    ["internalid", "anyof", bomRevisionId]
                 ]
             });
 
@@ -267,17 +446,24 @@ define(['N'],
             searchObj.run().each(function (result) {
                 // Obtener informacion
                 let { columns } = result;
-                let articulo_id_interno = result.getValue(columns[0])
-                let articulo_nombre = result.getText(columns[0])
-                let cantidad_bom = result.getValue(columns[1])
-                let unidad_id_interno = result.getValue(columns[2])
-                let unidad_nombre = result.getText(columns[2])
+                let revision_lista_materiales_id_interno = result.getValue(columns[0]);
+                let articulo_id_interno = result.getValue(columns[1]);
+                let articulo_codigo_descripcion = result.getText(columns[1]);
+                let cantidad_bom = result.getValue(columns[2]);
+                let units = result.getValue(columns[3]);
+                let principio_activo = result.getValue(columns[4]);
+
+                // Procesar informacion
+                // Informacion que se utiliza en el PDF - si no hay data, mostrara una cadena de texto vacia
+                cantidad_bom = parseFloat(cantidad_bom) || '';
 
                 // Insertar informacion en array
-                bomRevisionArray.push({
-                    articulo: { id_interno: articulo_id_interno, nombre: articulo_nombre },
-                    cantidad_bom: cantidad_bom,
-                    unidad: { id_interno: unidad_id_interno, nombre: unidad_nombre }
+                revisionListaMaterialesArray.push({
+                    revision_lista_materiales: { id_interno: revision_lista_materiales_id_interno },
+                    articulo: { id_interno: articulo_id_interno, codigo_descripcion: articulo_codigo_descripcion },
+                    cantidad_bom,
+                    units,
+                    principio_activo
                 });
                 return true;
             });
@@ -287,7 +473,7 @@ define(['N'],
             // Obtener data en formato agrupado
             let dataAgrupada = {}; // * Audit: Util, manejo de JSON
 
-            bomRevisionArray.forEach(element => {
+            revisionListaMaterialesArray.forEach(element => {
 
                 // Obtener variables
                 let articulo_id_interno = element.articulo.id_interno;
@@ -301,103 +487,27 @@ define(['N'],
                 // dataAgrupada[articulo_id_interno] = element;
             });
 
-            // error_log('getRevisionListaMateriales', { bomRevisionArray, dataAgrupada } );
+            // error_log('getRevisionListaMateriales', { revisionListaMaterialesArray, dataAgrupada } );
             return dataAgrupada;
         }
 
-        function getEmpleadosPermisoFirmar(subsidiariaId, centroCostoId) {
+        function getDetalleOrdenTrabajo_principioActivo(dataDetalleOrdenTrabajo, dataRevisionListaMateriales) {
 
-            // Crear un array para almacenar los valores
-            var empleadosArray = [];
+            dataDetalleOrdenTrabajo.forEach((value_detot, key_detot) => {
+                articulo_id_interno = value_detot.articulo.id_interno;
+                dataDetalleOrdenTrabajo[key_detot]['principio_activo'] = false;
 
-            // Crear una búsqueda para obtener los registros
-            var searchObj = search.create({
-                type: 'customrecord_bio_conf_ot_emp',
-                columns: [
-                    'custrecord_bio_ot_emp_subsidiaria',
-                    'custrecord_bio_ot_emp_centro_costo',
-                    'custrecord_bio_ot_emp_empleado'
-                ],
-                filters: [
-                    search.createFilter({
-                        name: 'isinactive',
-                        operator: search.Operator.IS,
-                        values: 'F' // F para registros activos
-                    }),
-                    search.createFilter({
-                        name: 'custrecord_bio_ot_emp_subsidiaria',
-                        operator: search.Operator.ANYOF,
-                        values: subsidiariaId
-                    }),
-                    search.createFilter({
-                        name: 'custrecord_bio_ot_emp_centro_costo',
-                        operator: search.Operator.ANYOF,
-                        values: centroCostoId
-                    }),
-                    search.createFilter({
-                        name: 'custrecord_bio_ot_emp_perm_firmar',
-                        operator: search.Operator.IS,
-                        values: 'T'
-                    })
-                ]
+                if (dataRevisionListaMateriales?.[articulo_id_interno]?.principio_activo == true) {
+
+                    // Obtener flag de principio activo
+                    dataDetalleOrdenTrabajo[key_detot]['principio_activo'] = true;
+                }
             });
 
-            // Ejecutar la búsqueda y recorrer los resultados
-            searchObj.run().each(function (result) {
-                var empleadoValue = result.getValue('custrecord_bio_ot_emp_empleado');
-                empleadosArray.push(Number(empleadoValue));
-                return true;
-            });
-
-            return empleadosArray;
+            return dataDetalleOrdenTrabajo;
         }
 
-        function getEmpleadosPermisoEliminar(subsidiariaId, centroCostoId) {
-
-            // Crear un array para almacenar los valores
-            var empleadosArray = [];
-
-            // Crear una búsqueda para obtener los registros
-            var searchObj = search.create({
-                type: 'customrecord_bio_conf_ot_emp',
-                columns: [
-                    'custrecord_bio_ot_emp_subsidiaria',
-                    'custrecord_bio_ot_emp_centro_costo',
-                    'custrecord_bio_ot_emp_empleado'
-                ],
-                filters: [
-                    search.createFilter({
-                        name: 'isinactive',
-                        operator: search.Operator.IS,
-                        values: 'F' // F para registros activos
-                    }),
-                    search.createFilter({
-                        name: 'custrecord_bio_ot_emp_subsidiaria',
-                        operator: search.Operator.ANYOF,
-                        values: subsidiariaId
-                    }),
-                    search.createFilter({
-                        name: 'custrecord_bio_ot_emp_centro_costo',
-                        operator: search.Operator.ANYOF,
-                        values: centroCostoId
-                    }),
-                    search.createFilter({
-                        name: 'custrecord_bio_ot_emp_perm_eliminar',
-                        operator: search.Operator.IS,
-                        values: 'T'
-                    })
-                ]
-            });
-
-            // Ejecutar la búsqueda y recorrer los resultados
-            searchObj.run().each(function (result) {
-                var empleadoValue = result.getValue('custrecord_bio_ot_emp_empleado');
-                empleadosArray.push(Number(empleadoValue));
-                return true;
-            });
-
-            return empleadosArray;
-        }
+        /****************** Helper ******************/
 
         function decimalAdjust(type, value, exp) {
             // Si el exp no está definido o es cero...
@@ -441,13 +551,17 @@ define(['N'],
             getUser,
             error_log,
             error_message,
-            // Orden de Trabajo
+            // Orden de Trabajo - Validacion
             getCountrySubsidiary,
+            // Orden de Trabajo - Records personalizados
             getFlujoFirmas,
             getEmpleadosPermisoFirmar,
             getEmpleadosPermisoEliminar,
             getConfiguracionUnidadMedida,
-            getRevisionListaMateriales
+            // Orden de Trabajo - Data
+            getDetalleOrdenTrabajo,
+            getRevisionListaMateriales,
+            getDetalleOrdenTrabajo_principioActivo
         }
 
     });
