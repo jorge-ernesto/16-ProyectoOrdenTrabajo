@@ -38,7 +38,7 @@ define(['N'],
 
         /****************** Records personalizados ******************/
 
-        function getFlujoFirmas(subsidiaryId, wordOrderTypeId) {
+        function getConfiguracionFlujoFirmas(subsidiaryId, wordOrderTypeId) {
 
             // Crear un array para almacenar los valores
             var flujoFirmasArray = [];
@@ -140,11 +140,11 @@ define(['N'],
                 return true;
             });
 
-            // error_log('getFlujoFirmas', flujoFirmasArray);
+            // error_log('getConfiguracionFlujoFirmas', flujoFirmasArray);
             return flujoFirmasArray;
         }
 
-        function getEmpleadosPermisoFirmar(subsidiaryId, classId) {
+        function getConfiguracionEmpleadosPermisoFirmar(subsidiaryId, classId) {
 
             // Crear un array para almacenar los valores
             var empleadosArray = [];
@@ -191,7 +191,7 @@ define(['N'],
             return empleadosArray;
         }
 
-        function getEmpleadosPermisoEliminar(subsidiaryId, classId) {
+        function getConfiguracionEmpleadosPermisoEliminar(subsidiaryId, classId) {
 
             // Crear un array para almacenar los valores
             var empleadosArray = [];
@@ -318,6 +318,53 @@ define(['N'],
             return dataAgrupada;
         }
 
+        function getConfiguracionEmpleadosPermisos(subsidiaryId, perm) {
+
+            // Crear un array para almacenar los valores
+            var empleadosArray = [];
+
+            // Filtro de permiso
+            if (perm == 'guardar')
+                permFieldName = 'custrecord_bio_ot_perm_permguardar';
+            else if (perm == 'campo_cantidad_lista_materiales_inicial')
+                permFieldName = 'custrecord_bio_ot_perm_permcamclmi'
+
+            // Crear una búsqueda para obtener los registros
+            var searchObj = search.create({
+                type: 'customrecord_bio_conf_ot_perm',
+                columns: [
+                    'custrecord_bio_ot_perm_subsidiaria',
+                    'custrecord_bio_ot_perm_empleado'
+                ],
+                filters: [
+                    search.createFilter({
+                        name: 'isinactive',
+                        operator: search.Operator.IS,
+                        values: 'F' // F para registros activos
+                    }),
+                    search.createFilter({
+                        name: 'custrecord_bio_ot_perm_subsidiaria',
+                        operator: search.Operator.ANYOF,
+                        values: subsidiaryId
+                    }),
+                    search.createFilter({
+                        name: permFieldName,
+                        operator: search.Operator.IS,
+                        values: 'T'
+                    })
+                ]
+            });
+
+            // Ejecutar la búsqueda y recorrer los resultados
+            searchObj.run().each(function (result) {
+                var empleadoValue = result.getValue('custrecord_bio_ot_perm_empleado');
+                empleadosArray.push(Number(empleadoValue));
+                return true;
+            });
+
+            return empleadosArray;
+        }
+
         /****************** Data ******************/
 
         function getDetalleOrdenTrabajo(wordOrderId) {
@@ -352,6 +399,7 @@ define(['N'],
                     }),
                     search.createColumn({ name: "custcol_bio_cant_lis_mat_ini", label: "Cantidad de Lista de Materiales Inicial" }),
                     search.createColumn({ name: "quantity", label: "Cantidad" }),
+                    search.createColumn({ name: "quantityuom", label: "Quantity in Transaction Units" }),
                     search.createColumn({ name: "unitabbreviation", label: "Unidades" })
                 ],
                 filters: [
@@ -374,8 +422,9 @@ define(['N'],
                 let articulo_codigo = result.getValue(columns[2]);
                 let articulo_descripcion = result.getValue(columns[3]);
                 let cantidad_generada = result.getValue(columns[4]);
-                let cantidad_entregada = result.getValue(columns[5]);
-                let unitabbreviation = result.getValue(columns[6]);
+                // let cantidad_entregada = result.getValue(columns[5]); // quantity
+                let cantidad_entregada = result.getValue(columns[6]); // quantityuom
+                let unitabbreviation = result.getValue(columns[7]);
 
                 // Procesar informacion
                 // Informacion que se utiliza en el PDF - si no hay data, mostrara una cadena de texto vacia
@@ -554,10 +603,11 @@ define(['N'],
             // Orden de Trabajo - Validacion
             getCountrySubsidiary,
             // Orden de Trabajo - Records personalizados
-            getFlujoFirmas,
-            getEmpleadosPermisoFirmar,
-            getEmpleadosPermisoEliminar,
+            getConfiguracionFlujoFirmas,
+            getConfiguracionEmpleadosPermisoFirmar,
+            getConfiguracionEmpleadosPermisoEliminar,
             getConfiguracionUnidadMedida,
+            getConfiguracionEmpleadosPermisos,
             // Orden de Trabajo - Data
             getDetalleOrdenTrabajo,
             getRevisionListaMateriales,
