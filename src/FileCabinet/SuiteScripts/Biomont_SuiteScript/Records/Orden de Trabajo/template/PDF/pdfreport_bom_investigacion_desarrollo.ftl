@@ -1,3 +1,7 @@
+<#-- CONFIGURACION FREEMARKER -->
+<#setting locale = "computer">
+<#setting number_format = "computer">
+
 <#assign params = input.data?eval>
 <?xml version="1.0"?>
 <!DOCTYPE pdf PUBLIC "-//big.faceless.org//report" "report-1.1.dtd">
@@ -160,8 +164,8 @@
                 <tr>
                     <td colspan="1">${detordtra.articulo.codigo}</td>
                     <td colspan="1">${detordtra.articulo.descripcion}</td>
-                    <td colspan="1">${detordtra.cantidad_entregada}</td>
-                    <td colspan="1">${detordtra.unitabbreviation}</td>
+                    <td colspan="1" align="center">${detordtra.cantidad_entregada?string("#,##0.000")}</td> <!-- ?string("#,##0.000") -->
+                    <td colspan="1" align="center">${detordtra.unitabbreviation}</td>
                 </tr>
                 </#list>
             </tbody>

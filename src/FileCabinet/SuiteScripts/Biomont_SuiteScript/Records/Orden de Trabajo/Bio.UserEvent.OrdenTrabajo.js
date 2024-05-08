@@ -159,7 +159,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                         return true;
                     }
 
-                    // Seguir iterando some
+                    // Seguir iterando con some
                     return false;
                 });
             }
@@ -198,7 +198,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                         return true;
                     }
 
-                    // Seguir iterando some
+                    // Seguir iterando con some
                     return false;
                 });
             }

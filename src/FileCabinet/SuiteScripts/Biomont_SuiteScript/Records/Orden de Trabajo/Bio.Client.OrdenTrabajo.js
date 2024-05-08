@@ -218,7 +218,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
             /******************/
 
-            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM Y CAMPOS ARTICULO, POCENTAJE DE RENDIMIENTO DEL COMPONENTE
+            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM Y CAMPOS ARTICULO, PORCENTAJE DE RENDIMIENTO DEL COMPONENTE
             if (scriptContext.sublistId == 'item' && (scriptContext.fieldId == 'item' || scriptContext.fieldId == 'componentyield' || scriptContext.fieldId == 'units')) {
 
                 // Obtener data de la sublista
@@ -280,7 +280,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
             /******************/
 
-            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM
+            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM O CAMPO ESTADO
             if (scriptContext.sublistId == 'item' || scriptContext.fieldId == 'orderstatus') {
 
                 // Habilitar campos de sublista por estado
@@ -411,7 +411,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
             /******************/
 
-            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM
+            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM O CAMPO ESTADO
             if (scriptContext.sublistId == 'item' || scriptContext.fieldId == 'orderstatus') {
 
                 // Deshabilitar campos sublista
@@ -422,12 +422,15 @@ define(['./lib/Bio.Library.Helper', 'N'],
                  * Estado - Values.
                     - Planificada: A
                     - Liberada: B
-                 */
+                */
                 // Obtener combo "Estado"
                 let comboEstado = recordContext.getValue('orderstatus');
 
+                // Obtener user
+                // let { user } = objHelper.getUser();
+
                 // Habilitar campos sublista
-                if (comboEstado == 'A') {
+                if (comboEstado == 'A') { // || user.role == '3'
                     habilitarCamposSublista(recordContext, mode);
                 }
             }
@@ -622,7 +625,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                         console.log(element.funcion_boton_firma)
                     };
 
-                    // Seguir iterando some
+                    // Seguir iterando con some
                     return false;
                 });
             }
@@ -644,7 +647,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                         console.log(element.funcion_boton_eliminar_firma)
                     };
 
-                    // Seguir iterando some
+                    // Seguir iterando con some
                     return false;
                 });
             }
