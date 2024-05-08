@@ -127,7 +127,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
             /****************** Mostrar botones para firmar ******************/
             // Obtener datos
-            let flujo_firmas_array = objHelper.getFlujoFirmas(subsidiaria_id, tipo_ot_id);
+            let flujo_firmas_array = objHelper.getConfiguracionFlujoFirmas(subsidiaria_id, tipo_ot_id);
 
             // Validar que encontro flujo de firmas
             if (Object.keys(flujo_firmas_array).length > 0) {
@@ -141,10 +141,10 @@ define(['./lib/Bio.Library.Helper', 'N'],
                         // Validar existencia de propiedades para botones
                         if (element.id_boton_firma && element.nombre_boton_firma && element.funcion_boton_firma) {
 
-                            let empleados_perm_firmar_array = objHelper.getEmpleadosPermisoFirmar(subsidiaria_id, element.centro_costo.id_interno);
+                            let empleados_perm_firmar_array = objHelper.getConfiguracionEmpleadosPermisoFirmar(subsidiaria_id, element.centro_costo.id_interno);
 
                             // Verificar empleados
-                            if (empleados_perm_firmar_array.includes(user.id)) {
+                            if (empleados_perm_firmar_array.includes(Number(user.id))) {
 
                                 // Agregamos botones de forma dinamica
                                 form.addButton({
@@ -166,7 +166,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
             /****************** Mostrar botones para eliminar firmas ******************/
             // Obtener datos
-            let flujo_firmas_array_reverse = objHelper.getFlujoFirmas(subsidiaria_id, tipo_ot_id).reverse();
+            let flujo_firmas_array_reverse = objHelper.getConfiguracionFlujoFirmas(subsidiaria_id, tipo_ot_id).reverse();
 
             // Validar que encontro flujo de firmas
             if (Object.keys(flujo_firmas_array_reverse).length > 0) {
@@ -180,10 +180,10 @@ define(['./lib/Bio.Library.Helper', 'N'],
                         // Validar existencia de propiedades para botones
                         if (element.id_boton_eliminar_firma && element.nombre_boton_eliminar_firma && element.funcion_boton_eliminar_firma) {
 
-                            let empleados_perm_eliminar_array = objHelper.getEmpleadosPermisoEliminar(subsidiaria_id, element.centro_costo.id_interno);
+                            let empleados_perm_eliminar_array = objHelper.getConfiguracionEmpleadosPermisoEliminar(subsidiaria_id, element.centro_costo.id_interno);
 
                             // Verificar empleados
-                            if (empleados_perm_eliminar_array.includes(user.id)) {
+                            if (empleados_perm_eliminar_array.includes(Number(user.id))) {
 
                                 // Agregamos botones de forma dinamica
                                 form.addButton({

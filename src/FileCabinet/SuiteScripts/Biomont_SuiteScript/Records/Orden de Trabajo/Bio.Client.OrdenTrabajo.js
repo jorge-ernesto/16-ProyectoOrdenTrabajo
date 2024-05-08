@@ -152,9 +152,9 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
                 // Obtener datos
                 let id_revision_lista_materiales = recordContext.getValue('billofmaterialsrevision');
-                let responseData = sendRequest('getDataRevisionListaMateriales', '', '', id_revision_lista_materiales);
+                let responseData = sendRequest({ method: 'getDataRevisionListaMateriales', id_revision_lista_materiales });
                 let id_subsidiaria = recordContext.getValue('subsidiary');
-                let responseData_ = sendRequest('getDataConfiguracionUnidadMedida', '', '', '', id_subsidiaria);
+                let responseData_ = sendRequest({ method: 'getDataConfiguracionUnidadMedida', id_subsidiaria });
 
                 // Debug
                 // console.log('data', { id_revision_lista_materiales, responseData, id_subsidiaria, responseData_ });
@@ -226,9 +226,9 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
                 // Obtener datos
                 let id_revision_lista_materiales = recordContext.getValue('billofmaterialsrevision');
-                let responseData = sendRequest('getDataRevisionListaMateriales', '', '', id_revision_lista_materiales);
+                let responseData = sendRequest({ method: 'getDataRevisionListaMateriales', id_revision_lista_materiales });
                 let id_subsidiaria = recordContext.getValue('subsidiary');
-                let responseData_ = sendRequest('getDataConfiguracionUnidadMedida', '', '', '', id_subsidiaria);
+                let responseData_ = sendRequest({ method: 'getDataConfiguracionUnidadMedida', id_subsidiaria });
 
                 // Debug
                 // console.log('data', { id_revision_lista_materiales, responseData, id_subsidiaria, responseData_ });
@@ -476,13 +476,19 @@ define(['./lib/Bio.Library.Helper', 'N'],
             if (mode == 'edit') {
 
                 // Obtener datos
-                let responseData = sendRequest('getDataFlujoFirmas');
+                let responseData = sendRequest({ method: 'getDataConfiguracionFlujoFirmas' });
+                let id_subsidiaria = recordContext.getValue('subsidiary');
+                let responseData_ = sendRequest({ method: 'getDataConfiguracionEmpleadosPermisos', id_subsidiaria, perm: 'guardar' });
+
+                // Obtener user
+                let { user } = objHelper.getUser();
 
                 // Validar response
                 if (responseData.status == 'success') {
 
                     // Obtener datos
                     let arrayFlujoFirmas = responseData.arrayFlujoFirmas;
+                    let arrayEmpleadosPermisos = responseData_.arrayEmpleadosPermisos;
 
                     // Validar que encontro flujo de firmas
                     if (Object.keys(arrayFlujoFirmas).length > 0) {
@@ -491,7 +497,8 @@ define(['./lib/Bio.Library.Helper', 'N'],
                         let ultimaFirma = recordContext.getValue(ultimoElementoFlujoFirmas['id_campo_usuario_firma']);
 
                         // Validar campo con data - que se haya firmado
-                        if (ultimaFirma) {
+                        // Validar que usuario no este registros en empleados permisos
+                        if (ultimaFirma && !arrayEmpleadosPermisos.includes(Number(user.id))) {
 
                             // Cargar Sweet Alert
                             loadSweetAlertLibrary().then(function () {
@@ -535,7 +542,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
             return suitelet;
         }
 
-        function sendRequestWrapper(method, id_campo_usuario_firma = '', id_campo_fecha_firma = '', id_revision_lista_materiales = '', id_subsidiaria = '') {
+        function sendRequestWrapper({ method, id_campo_usuario_firma = '', id_campo_fecha_firma = '', id_revision_lista_materiales = '', id_subsidiaria = '', perm = '' }) {
 
             // Cargar Sweet Alert
             loadSweetAlertLibrary().then(function () {
@@ -553,7 +560,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                     if (result.isConfirmed) {
 
                         // Ejecutar peticion
-                        let responseData = sendRequest(method, id_campo_usuario_firma, id_campo_fecha_firma, id_revision_lista_materiales, id_subsidiaria);
+                        let responseData = sendRequest({ method, id_campo_usuario_firma, id_campo_fecha_firma, id_revision_lista_materiales, id_subsidiaria, perm });
                         if (responseData.status == 'success' && responseData.urlRecord) {
                             refreshPage(responseData);
                         }
@@ -562,7 +569,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
             });
         }
 
-        function sendRequest(method, id_campo_usuario_firma = '', id_campo_fecha_firma = '', id_revision_lista_materiales = '', id_subsidiaria = '') {
+        function sendRequest({ method, id_campo_usuario_firma = '', id_campo_fecha_firma = '', id_revision_lista_materiales = '', id_subsidiaria = '', perm = '' }) {
 
             // Obtener el id interno del record proyecto
             let recordContext = currentRecord.get();
@@ -580,7 +587,8 @@ define(['./lib/Bio.Library.Helper', 'N'],
                     _id_campo_usuario_firma: id_campo_usuario_firma,
                     _id_campo_fecha_firma: id_campo_fecha_firma,
                     _id_revision_lista_materiales: id_revision_lista_materiales,
-                    _id_subsidiaria: id_subsidiaria
+                    _id_subsidiaria: id_subsidiaria,
+                    _perm: perm
                 })
             });
             let responseData = JSON.parse(response.body);
@@ -603,12 +611,12 @@ define(['./lib/Bio.Library.Helper', 'N'],
         let dynamicFunctions = {};
 
         // Obtener datos
-        let responseData = sendRequest('getDataFlujoFirmas');
+        let responseData = sendRequest({ method: 'getDataConfiguracionFlujoFirmas' });
 
         // Validar response
         if (responseData.status == 'success') {
 
-            /****************** Funciones para firmar ******************/
+            /****************** Funciones para botones firmar ******************/
 
             // Obtener datos
             let flujo_firmas_array = responseData.arrayFlujoFirmas;
@@ -621,7 +629,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
                     // Agregamos funciones de forma dinamica
                     dynamicFunctions[element.funcion_boton_firma] = function () {
-                        sendRequestWrapper('firmar', element.id_campo_usuario_firma, element.id_campo_fecha_firma);
+                        sendRequestWrapper({ method: 'firmar', id_campo_usuario_firma: element.id_campo_usuario_firma, id_campo_fecha_firma: element.id_campo_fecha_firma });
                         console.log(element.funcion_boton_firma)
                     };
 
@@ -630,7 +638,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                 });
             }
 
-            /****************** Funciones para eliminar firmas ******************/
+            /****************** Funciones para botones eliminar firmas ******************/
 
             // Obtener datos
             let flujo_firmas_array_reverse = responseData.arrayFlujoFirmas.reverse();
@@ -643,7 +651,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
                     // Agregamos funciones de forma dinamica
                     dynamicFunctions[element.funcion_boton_eliminar_firma] = function () {
-                        sendRequestWrapper('eliminar_firma', element.id_campo_usuario_firma, element.id_campo_fecha_firma);
+                        sendRequestWrapper({ method: 'eliminar_firma', id_campo_usuario_firma: element.id_campo_usuario_firma, id_campo_fecha_firma: element.id_campo_fecha_firma });
                         console.log(element.funcion_boton_eliminar_firma)
                     };
 
@@ -653,7 +661,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
             }
         }
 
-        /****************** Funciones para imprimir PDF ******************/
+        /****************** Funciones para botones imprimir PDF ******************/
 
         function descargarPDF_imprimirBOM() {
 
