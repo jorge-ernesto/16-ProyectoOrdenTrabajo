@@ -1,3 +1,7 @@
+<#-- CONFIGURACION FREEMARKER -->
+<#setting locale = "computer">
+<#setting number_format = "computer">
+
 <#assign params = input.data?eval>
 <?xml version="1.0"?>
 <!DOCTYPE pdf PUBLIC "-//big.faceless.org//report" "report-1.1.dtd">
@@ -174,9 +178,9 @@
                 <tr>
                     <td colspan="1" <#if detordtra.principio_activo = true>style="background-color: #D6DBDF; color: #000000"</#if>>${detordtra.articulo.codigo}</td>
                     <td colspan="1" <#if detordtra.principio_activo = true>style="background-color: #D6DBDF; color: #000000"</#if>>${detordtra.articulo.descripcion}</td>
-                    <td colspan="1" <#if detordtra.principio_activo = true>style="background-color: #D6DBDF; color: #000000"</#if>>${detordtra.cantidad_generada}</td>
-                    <td colspan="1" <#if detordtra.principio_activo = true>style="background-color: #D6DBDF; color: #000000"</#if>>${detordtra.cantidad_entregada}</td>
-                    <td colspan="1" <#if detordtra.principio_activo = true>style="background-color: #D6DBDF; color: #000000"</#if>>${detordtra.unitabbreviation}</td>
+                    <td colspan="1" align="center" <#if detordtra.principio_activo = true>style="background-color: #D6DBDF; color: #000000"</#if>>${detordtra.cantidad_generada?string("#,##0.000")}</td> <!-- ?string("#,##0.000") -->
+                    <td colspan="1" align="center" <#if detordtra.principio_activo = true>style="background-color: #D6DBDF; color: #000000"</#if>>${detordtra.cantidad_entregada?string("#,##0.000")}</td> <!-- ?string("#,##0.000") -->
+                    <td colspan="1" align="center" <#if detordtra.principio_activo = true>style="background-color: #D6DBDF; color: #000000"</#if>>${detordtra.unitabbreviation}</td>
                 </tr>
                 </#list>
             </tbody>
@@ -216,7 +220,7 @@
                     <#if !(params.workorder_data.tipo_ot == '3' || params.workorder_data.tipo_ot == '4' || params.workorder_data.tipo_ot == '6')>
                         <td colspan="1" align="center"><b>Almacén</b></td>
                     </#if>
-                    <td colspan="1" align="center"><b>Verificado por</b></td>
+                    <td colspan="1" align="center"><b>Aseguramiento de la Calidad</b></td>
                 </tr>
                 <tr>
                     <td colspan="3" style="border: none;"></td>
