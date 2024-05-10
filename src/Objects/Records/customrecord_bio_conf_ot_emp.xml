@@ -197,7 +197,7 @@
       <storevalue>T</storevalue>
       <subtab></subtab>
     </customrecordcustomfield>
-    <customrecordcustomfield scriptid="custrecord_bio_ot_emp_perm_eliminar">
+    <customrecordcustomfield scriptid="custrecord_bio_ot_emp_perm_eliminar_fir">
       <accesslevel>2</accesslevel>
       <allowquickadd>F</allowquickadd>
       <applyformatting>F</applyformatting>
@@ -217,7 +217,7 @@
       <isformula>F</isformula>
       <ismandatory>F</ismandatory>
       <isparent>F</isparent>
-      <label>Permiso eliminar</label>
+      <label>Permiso eliminar firma</label>
       <linktext></linktext>
       <maxlength></maxlength>
       <maxvalue></maxvalue>
