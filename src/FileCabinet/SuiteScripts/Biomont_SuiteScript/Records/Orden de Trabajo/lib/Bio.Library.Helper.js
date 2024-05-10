@@ -221,7 +221,7 @@ define(['N'],
                         values: classId
                     }),
                     search.createFilter({
-                        name: 'custrecord_bio_ot_emp_perm_eliminar',
+                        name: 'custrecord_bio_ot_emp_perm_eliminar_fir',
                         operator: search.Operator.IS,
                         values: 'T'
                     })
@@ -318,6 +318,15 @@ define(['N'],
             return dataAgrupada;
         }
 
+        /**
+         * Configuración de Empleados y Permisos.
+         *
+         * Esta función obtiene los empleados que tienen permisos específicos en una subsidiaria.
+         *
+         * @param {string} subsidiaryId - ID de la subsidiaria.
+         * @param {string} perm - Permiso a verificar, solo se aceptan "guardar" y "campo_cantidad_lista_materiales_inicial".
+         * @returns {Array} empleadosArray - Array que contiene los ID de los empleados con los permisos especificados.
+         */
         function getConfiguracionEmpleadosPermisos(subsidiaryId, perm) {
 
             // Crear un array para almacenar los valores

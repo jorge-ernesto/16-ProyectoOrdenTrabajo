@@ -63,6 +63,9 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
                 // Deshabilitar campos firmas
                 deshabilitarCamposFirmas(recordContext, mode);
+
+                // Habilitar campos de sublista por estado
+                habilitarCamposSublistaPorEstado(recordContext, mode);
             }
         }
 
@@ -92,11 +95,33 @@ define(['./lib/Bio.Library.Helper', 'N'],
             // Modo crear, editar, copiar y formularios
             if ((mode == 'create' || mode == 'edit' || mode == 'copy') && formularios.includes(Number(formulario))) {
 
-                // Habilitar campos de sublista por estado
-                habilitarCamposSublistaPorEstado(scriptContext, recordContext, mode);
+                setValueSubList_validateField(scriptContext, recordContext, mode);
             }
 
             return true;
+        }
+
+        function setValueSubList_validateField(scriptContext, recordContext, mode) {
+
+            // DEBUG
+            // SI EL EVENTO OCURRE A NIVEL DE CAMPOS DE CABECERA
+            if (isEmpty(scriptContext.sublistId)) {
+                console.log('validateField!!!', scriptContext);
+            }
+
+            // SI EL EVENTO OCURRE A NIVEL DE SUBLISTA
+            if (!isEmpty(scriptContext.sublistId)) {
+                console.log('validateField!!!', scriptContext)
+            }
+
+            /******************/
+
+            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM Y CAMPO CANTIDAD DE LISTA DE MATERIALES INICIAL O CAMPO ESTADO
+            if ((scriptContext.sublistId == 'item' && scriptContext.fieldId == 'custcol_bio_cant_lis_mat_ini') || scriptContext.fieldId == 'orderstatus') {
+
+                // Habilitar campos de sublista por estado
+                habilitarCamposSublistaPorEstado(recordContext, mode);
+            }
         }
 
         /**
@@ -123,11 +148,11 @@ define(['./lib/Bio.Library.Helper', 'N'],
             // Modo crear, editar, copiar y formularios
             if ((mode == 'create' || mode == 'edit' || mode == 'copy') && formularios.includes(Number(formulario))) {
 
-                setValueSubList(scriptContext, recordContext, mode);
+                setValueSubList_fieldChanged(scriptContext, recordContext, mode);
             }
         }
 
-        function setValueSubList(scriptContext, recordContext, mode) {
+        function setValueSubList_fieldChanged(scriptContext, recordContext, mode) {
 
             // DEBUG
             // SI EL EVENTO OCURRE A NIVEL DE CAMPOS DE CABECERA
@@ -218,7 +243,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
             /******************/
 
-            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM Y CAMPOS ARTICULO, PORCENTAJE DE RENDIMIENTO DEL COMPONENTE
+            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM Y CAMPOS ARTICULO, PORCENTAJE DE RENDIMIENTO DEL COMPONENTE Y UNIDADES
             if (scriptContext.sublistId == 'item' && (scriptContext.fieldId == 'item' || scriptContext.fieldId == 'componentyield' || scriptContext.fieldId == 'units')) {
 
                 // Obtener data de la sublista
@@ -280,11 +305,11 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
             /******************/
 
-            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM O CAMPO ESTADO
-            if (scriptContext.sublistId == 'item' || scriptContext.fieldId == 'orderstatus') {
+            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM Y CAMPO CANTIDAD DE LISTA DE MATERIALES INICIAL O CAMPO ESTADO
+            if ((scriptContext.sublistId == 'item' && scriptContext.fieldId == 'custcol_bio_cant_lis_mat_ini') || scriptContext.fieldId == 'orderstatus') {
 
                 // Habilitar campos de sublista por estado
-                habilitarCamposSublistaPorEstado(scriptContext, recordContext, mode);
+                habilitarCamposSublistaPorEstado(recordContext, mode);
             }
         }
 
@@ -396,43 +421,31 @@ define(['./lib/Bio.Library.Helper', 'N'],
             }
         }
 
-        function habilitarCamposSublistaPorEstado(scriptContext, recordContext, mode) {
+        function habilitarCamposSublistaPorEstado(recordContext, mode) {
 
-            // DEBUG
-            // SI EL EVENTO OCURRE A NIVEL DE CAMPOS DE CABECERA
-            if (isEmpty(scriptContext.sublistId)) {
-                console.log('validateField!!!', scriptContext);
-            }
+            // Deshabilitar campos sublista
+            deshabilitarCamposSublista(recordContext, mode);
 
-            // SI EL EVENTO OCURRE A NIVEL DE SUBLISTA
-            if (!isEmpty(scriptContext.sublistId)) {
-                console.log('validateField!!!', scriptContext)
-            }
+            /**
+             * Funcionalidad para habilitar y deshabilitar campos
+             * Estado - Values.
+                - Planificada: A
+                - Liberada: B
+            */
+            // Obtener combo "Estado"
+            let comboEstado = recordContext.getValue('orderstatus');
 
-            /******************/
+            // Obtener datos
+            let id_subsidiaria = recordContext.getValue('subsidiary');
+            let responseData_ = sendRequest({ method: 'getDataConfiguracionEmpleadosPermisos', id_subsidiaria, perm: 'campo_cantidad_lista_materiales_inicial' });
+            let arrayEmpleadosPermisos = responseData_.arrayEmpleadosPermisos;
 
-            // SE EJECUTA SOLO CUANDO SE HACEN CAMBIOS EN LA SUBLISTA ITEM O CAMPO ESTADO
-            if (scriptContext.sublistId == 'item' || scriptContext.fieldId == 'orderstatus') {
+            // Obtener user
+            let { user } = objHelper.getUser();
 
-                // Deshabilitar campos sublista
-                deshabilitarCamposSublista(recordContext, mode);
-
-                /**
-                 * Funcionalidad para habilitar y deshabilitar campos
-                 * Estado - Values.
-                    - Planificada: A
-                    - Liberada: B
-                */
-                // Obtener combo "Estado"
-                let comboEstado = recordContext.getValue('orderstatus');
-
-                // Obtener user
-                // let { user } = objHelper.getUser();
-
-                // Habilitar campos sublista
-                if (comboEstado == 'A') { // || user.role == '3'
-                    habilitarCamposSublista(recordContext, mode);
-                }
+            // Habilitar campos sublista
+            if (comboEstado == 'A' || arrayEmpleadosPermisos.includes(Number(user.id))) {
+                habilitarCamposSublista(recordContext, mode);
             }
         }
 

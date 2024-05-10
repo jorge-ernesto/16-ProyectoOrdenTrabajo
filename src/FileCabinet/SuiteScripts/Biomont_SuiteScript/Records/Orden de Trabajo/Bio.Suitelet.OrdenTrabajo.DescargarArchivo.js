@@ -117,14 +117,14 @@ define(['./lib/Bio.Library.Helper', 'N'],
                 observaciones: workorderRecord.getValue('memo'),
                 // Detalle
                 dataDetalleOrdenTrabajo: dataDetalleOrdenTrabajo_principioActivo,
-                // Firmas Logistica
+                // Firmas OTs que inicia Logística
                 emitido_por: workorderRecord.getText('custbody67'),
                 fecha_firma_emitido: workorderRecord.getText('custbody71'),
                 ajustado_por_almacen:  workorderRecord.getText('custbody69'),
                 fecha_firma_almacen: workorderRecord.getText('custbody72'),
                 verificado_por_aseguramiento: workorderRecord.getText('custbody68'),
                 fecha_firma_aseguramiento: workorderRecord.getText('custbody74'),
-                // Firmas Investigacion y Desarrollo
+                // Firmas OTs que inicia Investigación y Desarrollo
                 emitido_por__id: workorderRecord.getText('custbody80'),
                 fecha_firma_emitido__id: workorderRecord.getText('custbody105'),
                 revisado_por__id:  workorderRecord.getText('custbody69'),
