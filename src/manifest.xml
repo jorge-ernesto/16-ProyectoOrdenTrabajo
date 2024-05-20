@@ -1,4 +1,22 @@
 <manifest projecttype="ACCOUNTCUSTOMIZATION">
   <projectname>16-ProyectoOrdenTrabajo</projectname>
   <frameworkversion>1.0</frameworkversion>
+  <dependencies>
+    <features>
+      <feature required="true">CLASSES</feature>
+      <feature required="false">MULTILANGUAGE</feature>
+      <feature required="true">SERVERSIDESCRIPTING</feature>
+      <feature required="false">CUSTOMSEGMENTS</feature>
+      <feature required="false">EXTREMELIST</feature>
+      <feature required="false">MAILMERGE</feature>
+      <feature required="true">CUSTOMRECORDS</feature>
+      <feature required="true">SUBSIDIARIES</feature>
+      <feature required="false">CRM</feature>
+    </features>
+    <objects>
+      <object>customlist1025</object>
+      <object>custrecordbio_cam_revision_observacione</object>
+      <object>custrecord211</object>
+    </objects>
+  </dependencies>
 </manifest>
