@@ -3,64 +3,82 @@
   <frameworkversion>1.0</frameworkversion>
   <dependencies>
     <features>
+      <feature required="true">UNITSOFMEASURE</feature>
       <feature required="true">CLASSES</feature>
       <feature required="false">MULTILANGUAGE</feature>
       <feature required="true">SERVERSIDESCRIPTING</feature>
+      <feature required="false">CRM</feature>
       <feature required="false">CUSTOMSEGMENTS</feature>
       <feature required="false">EXTREMELIST</feature>
       <feature required="false">MAILMERGE</feature>
       <feature required="true">CUSTOMRECORDS</feature>
       <feature required="true">SUBSIDIARIES</feature>
-      <feature required="false">CRM</feature>
-      <feature required="true">UNITSOFMEASURE</feature>
     </features>
     <objects>
-      <object>custbody_11187_pref_entity_bank</object>
-      <object>custbodynufocus_cod_banco</object>
+      <object>custbody80</object>
       <object>custbody1</object>
       <object>customlist1025</object>
       <object>custbody_15889_cust_refund_entity_bank</object>
-      <object>cseg2</object>
       <object>custbody_ns_num_planilla_letra</object>
-      <object>custbody_15699_exclude_from_ep_process</object>
       <object>custbody_ns_planilla_generada_letras</object>
       <object>custbody48</object>
       <object>custbodyiqityscrappedmoved</object>
       <object>custbody_15529_vendor_entity_bank</object>
-      <object>customrecord_2663_entity_bank_details</object>
-      <object>custbodynufocus_enlace_letra</object>
       <object>custbody_ns_co_tretefuente</object>
-      <object>custbody_my_import_declaration_num</object>
       <object>custbody_ns_doc_ref_type</object>
-      <object>customrecord_ns_conv_avo_doub_taxa</object>
       <object>custbody_11724_bank_fee</object>
-      <object>custbody_am_production_unitstype</object>
       <object>custrecord184</object>
+      <object>custbody41</object>
+      <object>custbody_nsts_rm_rebate_attachment</object>
+      <object>custbody71</object>
+      <object>custbody_4599_mx_operation_type</object>
+      <object>custbody_am_production_units</object>
+      <object>custbody126</object>
+      <object>custcol_bio_cant_lis_mat_ini</object>
+      <object>customrecord_cseg2</object>
+      <object>custbody_4599_sg_import_permit_num</object>
+      <object>custrecordbio_cam_revision_observacione</object>
+      <object>custbodybio_cam_lote</object>
+      <object>custbody8</object>
+      <object>custbody72</object>
+      <object>custbody74</object>
+      <object>custbody_am_workorder_text</object>
+      <object>custbody_11187_pref_entity_bank</object>
+      <object>custbodynufocus_cod_banco</object>
+      <object>cseg2</object>
+      <object>custbody_15699_exclude_from_ep_process</object>
+      <object>custbody103</object>
+      <object>customrecord_2663_entity_bank_details</object>
+      <object>custbody69</object>
+      <object>custbodynufocus_enlace_letra</object>
+      <object>custbody68</object>
+      <object>custbody67</object>
+      <object>custbody_my_import_declaration_num</object>
+      <object>customrecord_ns_conv_avo_doub_taxa</object>
+      <object>custbody_am_production_unitstype</object>
       <object>custbody_10184_customer_entity_bank</object>
       <object>custbody_bio_cam_recepcion_factura</object>
       <object>custbody_psg_ei_inbound_edocument</object>
-      <object>custbody_nsts_rm_rebate_attachment</object>
       <object>customlist_operation_type</object>
       <object>custbody_11724_pay_bank_fees</object>
-      <object>custbody_4599_mx_operation_type</object>
-      <object>custbody_am_production_units</object>
       <object>custbody_15529_emp_entity_bank</object>
+      <object>custbody108</object>
       <object>custbody_ns_pe_indic_cat_m1</object>
+      <object>custbody105</object>
       <object>custbody_ns_fe_ticket_id</object>
+      <object>custbody104</object>
+      <object>custbody107</object>
       <object>custbody_ns_monto_neto_pagar</object>
-      <object>custcol_bio_cant_lis_mat_ini</object>
-      <object>customrecord_ns_tipo_documento</object>
+      <object>custbody106</object>
       <object>custbodyiqfwodeliverydate</object>
+      <object>customrecord_ns_tipo_documento</object>
+      <object>custbodybio_cam_fechacaducidad</object>
       <object>custbodynufocus_id_letra_deducciones</object>
-      <object>customrecord_cseg2</object>
       <object>custbody_am_production_unitsqty</object>
       <object>customrecord_psg_ei_inbound_edoc</object>
-      <object>custbody_4599_sg_import_permit_num</object>
-      <object>custrecordbio_cam_revision_observacione</object>
       <object>custrecord211</object>
       <object>custbody_ns_conv_avoid_doub_tax</object>
       <object>custbody_ns_co_treteica</object>
-      <object>custbody_am_workorder_text</object>
     </objects>
   </dependencies>
 </manifest>

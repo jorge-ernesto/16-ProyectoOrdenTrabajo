@@ -221,14 +221,15 @@ define(['./lib/Bio.Library.Helper', 'N'],
                         if (columnItem && columnComponentYield && columnUnits) {
 
                             // Obtener cantidad de lista de materiales inicial
-                            let cantidad_bom_ini = calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, columnUnits, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida);
+                            let quantity = recordContext.getValue('quantity');
+                            let cant_lis_mat_ini = objHelper.calculateCantidadListaMaterialesInicial(columnItem, columnComponentYield, columnUnits, quantity, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida);
 
                             // Setear cantidad de lista de materiales inicial
                             recordContext.setCurrentSublistValue({
                                 sublistId: sublistName,
                                 fieldId: 'custcol_bio_cant_lis_mat_ini',
                                 line: i,
-                                value: cantidad_bom_ini,
+                                value: cant_lis_mat_ini,
                                 ignoreFieldChange: true
                             });
 
@@ -288,14 +289,15 @@ define(['./lib/Bio.Library.Helper', 'N'],
                         if (arrayRevisionListaMateriales[columnItem]) {
 
                             // Obtener cantidad de lista de materiales inicial
-                            let cantidad_bom_ini = calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, columnUnits, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida);
+                            let quantity = recordContext.getValue('quantity');
+                            let cant_lis_mat_ini = objHelper.calculateCantidadListaMaterialesInicial(columnItem, columnComponentYield, columnUnits, quantity, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida);
 
                             // Setear cantidad de lista de materiales inicial
                             recordContext.setCurrentSublistValue({
                                 sublistId: 'item',
                                 fieldId: 'custcol_bio_cant_lis_mat_ini',
                                 line: line,
-                                value: cantidad_bom_ini,
+                                value: cant_lis_mat_ini,
                                 ignoreFieldChange: true
                             });
                         }
@@ -311,42 +313,6 @@ define(['./lib/Bio.Library.Helper', 'N'],
                 // Habilitar campos de sublista por estado
                 habilitarCamposSublistaPorEstado(recordContext, mode);
             }
-        }
-
-        function calculateQuantityBOMInit(recordContext, columnItem, columnComponentYield, columnUnits, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida) {
-
-            // Debug
-            console.log('req calculateQuantityBOMInit', { recordContext, columnItem, columnComponentYield, columnUnits, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida })
-
-            // Calcular la cantidad de lista de materiales inicial - redondeada a 5 decimales
-            let fDecimal = 5;
-            let cantidad_bom_ini = 0;
-            let cantidad_bom = arrayRevisionListaMateriales?.[columnItem]?.['cantidad_bom'];
-            let cantidad = recordContext.getValue('quantity');
-            let rend_comp = (columnComponentYield / 100);
-
-            // Procesar informacion
-            // Informacion que se utiliza para calcular la cantidad de lista de materiales inicial - si no hay data, lo tomara como 0
-            cantidad_bom = parseFloat(cantidad_bom) || 0;
-            cantidad = parseFloat(cantidad) || 0;
-            rend_comp = parseFloat(rend_comp) || 0;
-
-            if (rend_comp != 0) {
-                cantidad_bom_ini = (cantidad_bom * cantidad) / rend_comp;
-                cantidad_bom_ini = Math.round10(cantidad_bom_ini, -fDecimal);
-            }
-
-            // Calcular la cantidad de lista de materiales inicial - redondeada al entero más cercano hacia arriba
-            if (arrayConfiguracionUnidadMedida?.[columnUnits]?.['redondear_hacia_arriba'] == true) {
-                cantidad_bom_ini = Math.ceil(cantidad_bom_ini);
-            } else {
-                cantidad_bom_ini = cantidad_bom_ini;
-            }
-
-            // Debug
-            console.log('res calculateQuantityBOMInit', { cantidad_bom_ini, cantidad_bom, cantidad, rend_comp })
-
-            return cantidad_bom_ini;
         }
 
         /**
@@ -367,17 +333,19 @@ define(['./lib/Bio.Library.Helper', 'N'],
             // Obtener datos
             let formulario = recordContext.getValue('customform') || null;
 
-            // Debug
-            console.log('saveRecord');
-            console.log({ recordContext, mode });
+            // DEBUG
+            console.log('saveRecord!!!', scriptContext);
 
             // Modo crear, editar, copiar y formularios
             if ((mode == 'create' || mode == 'edit' || mode == 'copy') && formularios.includes(Number(formulario))) {
 
                 // Validar campos firmas
-                if (validarCamposFirmas(recordContext, mode)) {
+                if (!validarCamposFirmas(recordContext, mode)) {
                     return false;
                 }
+
+                // Guardar cantidad de lista de materiales
+                guardarCantidadListaMateriales(recordContext, mode);
             }
 
             return true;
@@ -433,7 +401,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                 - Liberada: B
             */
             // Obtener combo "Estado"
-            let comboEstado = recordContext.getValue('orderstatus');
+            // let comboEstado = recordContext.getValue('orderstatus');
 
             // Obtener datos
             let id_subsidiaria = recordContext.getValue('subsidiary');
@@ -444,7 +412,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
             let { user } = objHelper.getUser();
 
             // Habilitar campos sublista
-            if (comboEstado == 'A' || arrayEmpleadosPermisos.includes(Number(user.id))) {
+            if (/*comboEstado == 'A' || */arrayEmpleadosPermisos && arrayEmpleadosPermisos.includes(Number(user.id))) {
                 habilitarCamposSublista(recordContext, mode);
             }
         }
@@ -524,13 +492,110 @@ define(['./lib/Bio.Library.Helper', 'N'],
                                 });
                             });
 
-                            return true;
+                            return false;
                         }
                     }
                 }
             }
 
-            return false;
+            return true;
+        }
+
+        function guardarCantidadListaMateriales(recordContext, mode) {
+
+            // Modo editar
+            if (mode == 'edit') {
+
+                // Obtener datos
+                let estado = recordContext.getValue('orderstatus');
+
+                // Es estado Liberada
+                if (estado == 'B') {
+
+                    // Obtener url de Sandbox o Produccion
+                    let url = null;
+                    let isSandbox = document.location.hostname.includes('sb1');
+                    if (isSandbox)
+                        url = "https://170.239.101.46:8080/bionetsuite_sb";
+                    else
+                        url = "https://170.239.101.46:8080/bionetsuite";
+
+                    /****************** Metodo en JavaScript de Juan Peña ******************/
+                    if (false) {
+                        let itemdata = document.getElementsByName('itemdata')[0].value;
+                        let matches = itemdata.match(/\b(BK|MP|ME|MV)\d{8}\b.*?(?=\b(BK|MP|ME|MV)\d{8}\b|$)/g);
+                        let array_filas = [];
+                        matches.forEach(match => {
+                            let subarray = match.split('\u0001');
+                            array_filas.push({
+                                id_OT: document.getElementById("id").value,
+                                num_OT: document.getElementById("tranid").value,
+                                ensamblaje: document.getElementById("hddn_assemblyitem_fs").value.substring(0, 10),
+                                componente: subarray[0].substring(0, 10),
+                                cantidad: subarray[11],
+                                semana: document.getElementById("custbody93").value
+                            });
+                        });
+                    }
+
+                    /****************** Metodo en SuiteScript ******************/
+                    // Obtener data de la sublista
+                    let sublistName = 'item';
+                    let lineCount = recordContext.getLineCount({ sublistId: sublistName });
+                    let itemSublist = recordContext.getSublist({ sublistId: sublistName });
+
+                    // Recorrer sublista
+                    let array_filas = [];
+                    for (let i = 0; i < lineCount; i++) {
+                        // log.debug('i', i);
+
+                        // Obtener campos
+                        let columnItem = recordContext.getSublistText({
+                            sublistId: sublistName,
+                            fieldId: 'item',
+                            line: i
+                        });
+                        let columnCantLisMatIni = recordContext.getSublistValue({
+                            sublistId: sublistName,
+                            fieldId: 'custcol_bio_cant_lis_mat_ini',
+                            line: i
+                        });
+
+                        array_filas.push({
+                            id_OT: recordContext.getValue('id'),
+                            num_OT: recordContext.getValue('tranid'),
+                            ensamblaje: recordContext.getValue('assemblyitem'),
+                            componente: columnItem.substring(0, 10),
+                            cantidad: columnCantLisMatIni,
+                            semana: recordContext.getValue('custbody93')
+                        });
+                    }
+                    // console.log('array_filas', array_filas);
+
+                    /****************** Solicitud HTTP ******************/
+                    // Validar url
+                    if (url) {
+                        fetch(url + "/cantidadesLM/guardarDatos", {
+                            method: "POST",
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                            },
+                            body: JSON.stringify({ "dato": array_filas })
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                // console.log(data.res);
+
+                                if (data.res == 1) {
+                                    console.log("Se guardó con éxito las CANTIDADES GENERADAS");
+                                } else {
+                                    console.log("Hubo un error al guardar las CANTIDADES GENERADAS");
+                                }
+                            })
+                            .catch(error => console.error(error));
+                    }
+                }
+            }
         }
 
         /****************** Solicitud HTTP ******************/
@@ -689,6 +754,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                 params: {
                     _button: 'pdf',
                     _type: 'imprimir_bom',
+                    _action: 'preview',
                     _workorder_id: workorder_id
                 }
             });

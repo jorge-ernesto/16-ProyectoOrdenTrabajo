@@ -27,7 +27,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
         /******************/
 
         // Crear PDF
-        function createPDF_imprimirBOM(workorder_id, workorder_data) {
+        function createPDF_imprimirBOM(action, workorder_id, workorder_data) {
             // Nombre del archivo
             let typeRep = 'reporteOrdenTrabajoBOM';
             let titleDocument = 'Reporte Orden de Trabajo - BOM'
@@ -55,84 +55,91 @@ define(['./lib/Bio.Library.Helper', 'N'],
                 }
             });
 
-            // Crear PDF
-            let pdfFile = rendererPDF.renderAsPdf();
+            let pdfFile = null;
 
-            // Reescribir datos de PDF
-            pdfFile.name = `biomont_${typeRep}.pdf`;
+            if (action == 'download') {
+                // Crear PDF
+                pdfFile = rendererPDF.renderAsPdf();
 
-            // Crear PDF
-            // let pdfFile = rendererPDF.renderAsString().replace(/&/g, '&amp;');
+                // Reescribir datos de PDF
+                pdfFile.name = `biomont_${typeRep}.pdf`;
+            } else if (action == 'preview') {
+                // Crear PDF
+                pdfFile = rendererPDF.renderAsString().replace(/&/g, '&amp;');
+            }
 
             return { pdfFile };
         }
 
         function getData_imprimirBOM(workorder_id) {
-            // Obtener el record de orden de trabajo
-            var workorderRecord = record.load({
-                type: 'workorder',
-                id: workorder_id
-            });
+            // Obtener data de orden de trabajo - cabecera
+            var dataCabeceraOrdenTrabajo = objHelper.getCabeceraOrdenTrabajo(workorder_id);
 
             // Obtener el record de articulo ensamblaje
-            let assemblyitem_id = workorderRecord.getValue('assemblyitem');
+            let assemblyitem_id = dataCabeceraOrdenTrabajo.assemblyitem_id;
             var assemblyitemRecord = record.load({
                 type: 'lotnumberedassemblyitem',
                 id: assemblyitem_id
             });
 
-            // Obtener data
-            let bomrevision_id = workorderRecord.getValue('billofmaterialsrevision');
+            // Obtener data de orden de trabajo - detalle
+            let bomrevision_id = dataCabeceraOrdenTrabajo.bomrevision_id;
+            let subsidiary_id = dataCabeceraOrdenTrabajo.subsidiary_id;
             let dataDetalleOrdenTrabajo = objHelper.getDetalleOrdenTrabajo(workorder_id);
             let dataRevisionListaMateriales = objHelper.getRevisionListaMateriales(bomrevision_id);
-            let dataDetalleOrdenTrabajo_principioActivo = objHelper.getDetalleOrdenTrabajo_principioActivo(dataDetalleOrdenTrabajo, dataRevisionListaMateriales);
+            let dataConfiguracionUnidadMedida = objHelper.getConfiguracionUnidadMedida(subsidiary_id);
+            // Obtener cantidad de lista de materiales inicial
+            let dataDetalleOrdenTrabajo_cantLisMatIni = objHelper.getDetalleOrdenTrabajo_cantLisMatIni(dataCabeceraOrdenTrabajo, dataDetalleOrdenTrabajo, dataRevisionListaMateriales, dataConfiguracionUnidadMedida);
+            // Obtener flag de principio activo
+            let dataDetalleOrdenTrabajo_principioActivo = objHelper.getDetalleOrdenTrabajo_principioActivo(dataDetalleOrdenTrabajo_cantLisMatIni, dataRevisionListaMateriales);
 
             // Procesar informacion
-            let fecha_registro = workorderRecord.getText('trandate');
-            let fecha_fabricacion = workorderRecord.getText('custbody126');
+            let fecha_registro = dataCabeceraOrdenTrabajo.fecha_registro;
+            let fecha_fabricacion = dataCabeceraOrdenTrabajo.fecha_fabricacion;
             fecha_fabricacion = fecha_fabricacion ? fecha_fabricacion.split('/')[1] + '-' + fecha_fabricacion.split('/')[2] : '';
-            let fecha_expira = workorderRecord.getText('custbodybio_cam_fechacaducidad');
+            let fecha_expira = dataCabeceraOrdenTrabajo.fecha_expira;
 
             // Debug
             // objHelper.error_log('data', { dataDetalleOrdenTrabajo, dataRevisionListaMateriales, dataDetalleOrdenTrabajo_principioActivo });
 
             // Obtener data
             let data = {
-                tipo_ot: workorderRecord.getValue('custbody8'),
-                tipo_ot_nombre: workorderRecord.getText('custbody8'),
+                // Tipo de orden de trabajo
+                tipo_ot: dataCabeceraOrdenTrabajo.tipo_ot,
+                tipo_ot_nombre: dataCabeceraOrdenTrabajo.tipo_ot_nombre,
 
                 // Data
                 // Cabecera
                 codigo_producto: assemblyitemRecord.getValue('itemid'),
                 producto: assemblyitemRecord.getValue('displayname'),
-                numero_ot: workorderRecord.getValue('tranid'),
-                cantidad: workorderRecord.getValue('quantity'),
-                unidades: workorderRecord.getText('units'),
-                cantidad_producir: workorderRecord.getValue('quantity') + ' ' + workorderRecord.getText('units'),
+                numero_ot: dataCabeceraOrdenTrabajo.numero_ot,
+                cantidad: dataCabeceraOrdenTrabajo.cantidad,
+                unidades: dataCabeceraOrdenTrabajo.unidades,
+                cantidad_producir: dataCabeceraOrdenTrabajo.cantidad + ' ' + dataCabeceraOrdenTrabajo.unidades,
                 fecha_registro: fecha_registro,
-                lote: workorderRecord.getValue('custbodybio_cam_lote'),
-                fecha_fabricacion: fecha_fabricacion,
-                fecha_expira: fecha_expira,
-                linea: workorderRecord.getValue('custbody41'),
-                observaciones: workorderRecord.getValue('memo'),
+                lote: dataCabeceraOrdenTrabajo.lote,
+                fecha_fabricacion: fecha_fabricacion ,
+                fecha_expira: fecha_expira || '-',
+                linea: dataCabeceraOrdenTrabajo.linea,
+                observaciones: dataCabeceraOrdenTrabajo.observaciones,
                 // Detalle
                 dataDetalleOrdenTrabajo: dataDetalleOrdenTrabajo_principioActivo,
                 // Firmas OTs que inicia Logística
-                emitido_por: workorderRecord.getText('custbody67'),
-                fecha_firma_emitido: workorderRecord.getText('custbody71'),
-                ajustado_por_almacen:  workorderRecord.getText('custbody69'),
-                fecha_firma_almacen: workorderRecord.getText('custbody72'),
-                verificado_por_aseguramiento: workorderRecord.getText('custbody68'),
-                fecha_firma_aseguramiento: workorderRecord.getText('custbody74'),
+                emitido_por: dataCabeceraOrdenTrabajo.emitido_por,
+                fecha_firma_emitido: dataCabeceraOrdenTrabajo.fecha_firma_emitido,
+                ajustado_por_almacen:  dataCabeceraOrdenTrabajo.ajustado_por_almacen,
+                fecha_firma_almacen: dataCabeceraOrdenTrabajo.fecha_firma_almacen,
+                verificado_por_aseguramiento: dataCabeceraOrdenTrabajo.verificado_por_aseguramiento,
+                fecha_firma_aseguramiento: dataCabeceraOrdenTrabajo.fecha_firma_aseguramiento,
                 // Firmas OTs que inicia Investigación y Desarrollo
-                emitido_por__id: workorderRecord.getText('custbody80'),
-                fecha_firma_emitido__id: workorderRecord.getText('custbody105'),
-                revisado_por__id:  workorderRecord.getText('custbody69'),
-                fecha_firma_revisado__id: workorderRecord.getText('custbody106'),
-                aprobado_por__id: workorderRecord.getText('custbody103'),
-                fecha_firma_aprobado__id: workorderRecord.getText('custbody107'),
-                recibido_por__id: workorderRecord.getText('custbody104'),
-                fecha_firma_recibido__id: workorderRecord.getText('custbody108'),
+                emitido_por__id: dataCabeceraOrdenTrabajo.emitido_por__id,
+                fecha_firma_emitido__id: dataCabeceraOrdenTrabajo.fecha_firma_emitido__id,
+                revisado_por__id:  dataCabeceraOrdenTrabajo.revisado_por__id,
+                fecha_firma_revisado__id: dataCabeceraOrdenTrabajo.fecha_firma_revisado__id,
+                aprobado_por__id: dataCabeceraOrdenTrabajo.aprobado_por__id,
+                fecha_firma_aprobado__id: dataCabeceraOrdenTrabajo.fecha_firma_aprobado__id,
+                recibido_por__id: dataCabeceraOrdenTrabajo.recibido_por__id,
+                fecha_firma_recibido__id: dataCabeceraOrdenTrabajo.fecha_firma_recibido__id,
             }
 
             // objHelper.error_log('data', data);
@@ -140,14 +147,11 @@ define(['./lib/Bio.Library.Helper', 'N'],
         }
 
         function validarPermiso_imprimirBOM(workorder_id) {
-            // Obtener el record de orden de trabajo
-            var workorderRecord = record.load({
-                type: 'workorder',
-                id: workorder_id
-            });
+            // Obtener data de orden de trabajo - cabecera
+            var dataCabeceraOrdenTrabajo = objHelper.getCabeceraOrdenTrabajo(workorder_id);
 
             // Validar permiso de tipo de orden de trabajo
-            let tipo_ot = workorderRecord.getValue('custbody8');
+            let tipo_ot = dataCabeceraOrdenTrabajo.tipo_ot;
             if (!tipo_ot) {
                 objHelper.error_log('Mensaje', 'No se registro Tipo de Orden de Trabajo');
             }
@@ -173,6 +177,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                 // Obtener datos por url
                 let button = scriptContext.request.parameters['_button'];
                 let type = scriptContext.request.parameters['_type'];
+                let action = scriptContext.request.parameters['_action'] || 'download';
                 let workorder_id = scriptContext.request.parameters['_workorder_id'];
 
                 if (button == 'pdf' && type == 'imprimir_bom') {
@@ -184,15 +189,17 @@ define(['./lib/Bio.Library.Helper', 'N'],
                     let workorder_data = getData_imprimirBOM(workorder_id);
 
                     // Crear PDF
-                    let { pdfFile } = createPDF_imprimirBOM(workorder_id, workorder_data);
+                    let { pdfFile } = createPDF_imprimirBOM(action, workorder_id, workorder_data);
 
-                    // Descargar PDF
-                    scriptContext.response.writeFile({
-                        file: pdfFile
-                    });
-
-                    // Descargar PDF
-                    // scriptContext.response.renderPdf(pdfFile);
+                    if (action == 'download') {
+                        // Descargar PDF
+                        scriptContext.response.writeFile({
+                            file: pdfFile
+                        });
+                    } else if (action == 'preview') {
+                        // Descargar PDF
+                        scriptContext.response.renderPdf(pdfFile);
+                    }
                 }
             }
         }
