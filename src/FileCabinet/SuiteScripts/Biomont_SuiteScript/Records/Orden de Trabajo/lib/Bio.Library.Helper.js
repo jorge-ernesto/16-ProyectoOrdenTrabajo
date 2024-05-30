@@ -38,7 +38,7 @@ define(['N'],
 
         /****************** Records personalizados ******************/
 
-        function getConfiguracionFlujoFirmas(subsidiaryId, wordOrderTypeId) {
+        function getConfiguracionFlujoFirmas(subsidiaryId, workOrderTypeId) {
 
             // Crear un array para almacenar los valores
             var flujoFirmasArray = [];
@@ -49,8 +49,8 @@ define(['N'],
             }
 
             // Filtro de tipo de orden de trabajo
-            if (!wordOrderTypeId) {
-                wordOrderTypeId = '@NONE@';
+            if (!workOrderTypeId) {
+                workOrderTypeId = '@NONE@';
             }
 
             // Crear una búsqueda para obtener los registros
@@ -93,7 +93,7 @@ define(['N'],
                     search.createFilter({
                         name: 'custrecord_bio_ot_flufir_tipo_ot',
                         operator: search.Operator.ANYOF,
-                        values: wordOrderTypeId
+                        values: workOrderTypeId
                     })
                 ]
             });
@@ -376,14 +376,170 @@ define(['N'],
 
         /****************** Data ******************/
 
-        function getDetalleOrdenTrabajo(wordOrderId) {
+        function getCabeceraOrdenTrabajo(workOrderId) {
+
+            // Crear un array para almacenar los valores
+            let cabeceraOrdenTrabajoArray = {};
+
+            // Filtro de subsidiaria
+            if (!workOrderId) {
+                workOrderId = '@NONE@';
+            }
+
+            // Crear una búsqueda para obtener los registros
+            let searchObj = search.create({
+                type: 'workorder',
+                columns: [
+                    search.createColumn({ name: "internalid", label: "ID interno" }),
+                    search.createColumn({ name: "custbody8", label: "BIO_CAM_TIPO_ORDEN_DE_TRABAJO" }),
+                    search.createColumn({ name: "item", label: "Artículo" }),
+                    search.createColumn({
+                        name: "itemid",
+                        join: "item",
+                        label: "Nombre"
+                    }),
+                    search.createColumn({
+                        name: "displayname",
+                        join: "item",
+                        label: "Nombre para mostrar"
+                    }),
+                    search.createColumn({ name: "tranid", label: "Número de documento" }),
+                    search.createColumn({ name: "quantity", label: "Cantidad" }),
+                    search.createColumn({ name: "unit", label: "Unidades" }),
+                    search.createColumn({ name: "trandate", label: "Fecha" }),
+                    search.createColumn({ name: "custbodybio_cam_lote", label: "LOTE" }),
+                    search.createColumn({ name: "custbody126", label: "BIO_CAM_FECHA_INICIO_PRODUCCION_OT" }),
+                    search.createColumn({ name: "custbodybio_cam_fechacaducidad", label: "BIO_CAM_OP_FECHA_CADUCIDAD" }),
+                    search.createColumn({ name: "custbody41", label: "BIO_CAM_LINEA_PRODUCTO_OP" }),
+                    search.createColumn({ name: "memo", label: "Nota" }),
+                    search.createColumn({
+                        name: "internalid",
+                        join: "bomRevision",
+                        label: "ID interno"
+                    }),
+                    search.createColumn({ name: "subsidiary", label: "Subsidiaria" }),
+                    search.createColumn({ name: "custbody67", label: "BIO_CAM_EMITIDO_OT" }),
+                    search.createColumn({ name: "custbody71", label: "BIO_CAM_FECHA_FIRMA_EMITIDO_OT" }),
+                    search.createColumn({ name: "custbody69", label: "BIO_CAM_REVISADO_ALMACEN_OT" }),
+                    search.createColumn({ name: "custbody72", label: "BIO_CAM_FECHA_FIRMA_ALMACEN_OT" }),
+                    search.createColumn({ name: "custbody68", label: "BIO_CAM_REVISADO_ASEGURAMIENTO_OT" }),
+                    search.createColumn({ name: "custbody74", label: "BIO_CAM_FECHA_FIRMA_ASEGURAMIENTO_OT" }),
+                    search.createColumn({ name: "custbody80", label: "BIO_CAM_OP_EMITIDO_ID" }),
+                    search.createColumn({ name: "custbody105", label: "BIO_CAM_FECHA_FIRMA_EMITIDO_OT_P" }),
+                    search.createColumn({ name: "custbody69", label: "BIO_CAM_REVISADO_ALMACEN_OT" }),
+                    search.createColumn({ name: "custbody106", label: "BIO_CAM_FECHA_FIRMA_REVISADO_OT_P" }),
+                    search.createColumn({ name: "custbody103", label: "BIO_CAM_APROBADO_OT" }),
+                    search.createColumn({ name: "custbody107", label: "BIO_CAM_FECHA_FIRMA_APROBADO_OT_P" }),
+                    search.createColumn({ name: "custbody104", label: "BIO_CAM_RECIBIDO_OT" }),
+                    search.createColumn({ name: "custbody108", label: "BIO_CAM_FECHA_FIRMA_RECIBIDO_OT_P" })
+                ],
+                filters: [
+                    ["mainline", "is", "T"],
+                    "AND",
+                    ["type", "anyof", "WorkOrd"],
+                    "AND",
+                    ["internalid", "anyof", workOrderId]
+                ]
+            });
+
+            // Ejecutar la búsqueda y recorrer los resultados
+            searchObj.run().each(function (result) {
+                // Obtener informacion
+                let { columns } = result;
+
+                // Tipo de orden de trabajo
+                let tipo_ot = result.getValue(columns[1]);
+                let tipo_ot_nombre = result.getText(columns[1]);
+
+                // Data
+                // Cabecera
+                let assemblyitem_id = result.getValue(columns[2]);
+                let numero_ot = result.getValue(columns[5]);
+                let cantidad = result.getValue(columns[6]);
+                let unidades = result.getValue(columns[7]);
+                let cantidad_producir = result.getValue(columns[6]) + ' ' + result.getValue(columns[7]);
+                let fecha_registro = result.getValue(columns[8]);
+                let lote = result.getValue(columns[9]);
+                let fecha_fabricacion = result.getValue(columns[10]);
+                let fecha_expira = result.getValue(columns[11]);
+                let linea = result.getValue(columns[12]);
+                let observaciones = result.getValue(columns[13]);
+                // Detalle
+                let bomrevision_id = result.getValue(columns[14]);
+                let subsidiary_id = result.getValue(columns[15]);
+                // Firmas OTs que inicia Logística
+                let emitido_por = result.getText(columns[16]);
+                let fecha_firma_emitido = result.getValue(columns[17]);
+                let ajustado_por_almacen = result.getText(columns[18]);
+                let fecha_firma_almacen = result.getValue(columns[19]);
+                let verificado_por_aseguramiento = result.getText(columns[20]);
+                let fecha_firma_aseguramiento = result.getValue(columns[21]);
+                // Firmas OTs que inicia Investigación y Desarrollo
+                let emitido_por__id = result.getText(columns[22]);
+                let fecha_firma_emitido__id = result.getValue(columns[23]);
+                let revisado_por__id = result.getText(columns[24]);
+                let fecha_firma_revisado__id = result.getValue(columns[25]);
+                let aprobado_por__id = result.getText(columns[26]);
+                let fecha_firma_aprobado__id = result.getValue(columns[27]);
+                let recibido_por__id = result.getText(columns[28]);
+                let fecha_firma_recibido__id = result.getValue(columns[29]);
+
+                // Insertar informacion en json
+                cabeceraOrdenTrabajoArray = {
+                    // Tipo de orden de trabajo
+                    tipo_ot: tipo_ot,
+                    tipo_ot_nombre: tipo_ot_nombre,
+
+                    // Data
+                    // Cabecera
+                    assemblyitem_id: assemblyitem_id,
+                    numero_ot: numero_ot,
+                    cantidad: cantidad,
+                    unidades: unidades,
+                    cantidad_producir: cantidad_producir,
+                    fecha_registro: fecha_registro,
+                    lote: lote,
+                    fecha_fabricacion: fecha_fabricacion,
+                    fecha_expira: fecha_expira,
+                    linea: linea,
+                    observaciones: observaciones,
+                    // Detalle
+                    bomrevision_id: bomrevision_id,
+                    subsidiary_id: subsidiary_id,
+                    // Firmas OTs que inicia Logística
+                    emitido_por: emitido_por,
+                    fecha_firma_emitido: fecha_firma_emitido,
+                    ajustado_por_almacen: ajustado_por_almacen,
+                    fecha_firma_almacen: fecha_firma_almacen,
+                    verificado_por_aseguramiento: verificado_por_aseguramiento,
+                    fecha_firma_aseguramiento: fecha_firma_aseguramiento,
+                    // Firmas OTs que inicia Investigación y Desarrollo
+                    emitido_por__id: emitido_por__id,
+                    fecha_firma_emitido__id: fecha_firma_emitido__id,
+                    revisado_por__id: revisado_por__id,
+                    fecha_firma_revisado__id: fecha_firma_revisado__id,
+                    aprobado_por__id: aprobado_por__id,
+                    fecha_firma_aprobado__id: fecha_firma_aprobado__id,
+                    recibido_por__id: recibido_por__id,
+                    fecha_firma_recibido__i: fecha_firma_recibido__id
+                }
+
+                // Detener la búsqueda
+                return false;
+            });
+
+            // error_log('cabeceraOrdenTrabajoArray', cabeceraOrdenTrabajoArray);
+            return cabeceraOrdenTrabajoArray;
+        }
+
+        function getDetalleOrdenTrabajo(workOrderId) {
 
             // Crear un array para almacenar los valores
             let detalleOrdenTrabajoArray = [];
 
             // Filtro de subsidiaria
-            if (!wordOrderId) {
-                wordOrderId = '@NONE@';
+            if (!workOrderId) {
+                workOrderId = '@NONE@';
             }
 
             // Crear una búsqueda para obtener los registros
@@ -408,15 +564,18 @@ define(['N'],
                     }),
                     search.createColumn({ name: "custcol_bio_cant_lis_mat_ini", label: "Cantidad de Lista de Materiales Inicial" }),
                     search.createColumn({ name: "quantity", label: "Cantidad" }),
-                    search.createColumn({ name: "quantityuom", label: "Quantity in Transaction Units" }),
-                    search.createColumn({ name: "unitabbreviation", label: "Unidades" })
+                    search.createColumn({ name: "quantityuom", label: "Cantidad en unidades de la transacción" }),
+                    search.createColumn({ name: "unitabbreviation", label: "Unidades" }),
+                    /******************/
+                    search.createColumn({ name: "componentyield", label: "Rendimiento de componentes" }),
+                    search.createColumn({ name: "unitid", label: "ID de la unidad" })
                 ],
                 filters: [
                     ["mainline", "is", "F"],
                     "AND",
                     ["type", "anyof", "WorkOrd"],
                     "AND",
-                    ["internalid", "anyof", wordOrderId],
+                    ["internalid", "anyof", workOrderId],
                     "AND",
                     ["unit", "noneof", "@NONE@"]
                 ]
@@ -434,6 +593,9 @@ define(['N'],
                 // let cantidad_entregada = result.getValue(columns[5]); // quantity
                 let cantidad_entregada = result.getValue(columns[6]); // quantityuom
                 let unitabbreviation = result.getValue(columns[7]);
+                /******************/
+                let rendimiento_componentes = result.getValue(columns[8]);
+                let unitid = result.getValue(columns[9]);
 
                 // Procesar informacion
                 // Informacion que se utiliza en el PDF - si no hay data, mostrara una cadena de texto vacia
@@ -446,7 +608,10 @@ define(['N'],
                     articulo: { id_interno: articulo_id_interno, codigo: articulo_codigo, descripcion: articulo_descripcion },
                     cantidad_generada,
                     cantidad_entregada,
-                    unitabbreviation
+                    unitabbreviation,
+                    /******************/
+                    rendimiento_componentes,
+                    unitid
                 });
                 return true;
             });
@@ -549,9 +714,84 @@ define(['N'],
             return dataAgrupada;
         }
 
+        function calculateCantidadListaMaterialesInicial(columnItem, columnComponentYield, columnUnits, quantity, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida) {
+
+            // Debug
+            // console.log('req calculateCantidadListaMaterialesInicial', { columnItem, columnComponentYield, columnUnits, quantity, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida })
+
+            // Configuracion de decimales
+            let fDecimal = 5;
+
+            // Calcular la cantidad de lista de materiales inicial - redondeada a 5 decimales
+            let cantidad_bom_ini = 0;
+            let cantidad_bom = arrayRevisionListaMateriales?.[columnItem]?.['cantidad_bom'];
+            let cantidad = quantity;
+            let rend_comp = (columnComponentYield / 100);
+
+            // Procesar informacion
+            // Informacion que se utiliza para calcular la cantidad de lista de materiales inicial - si no hay data, lo tomara como 0
+            cantidad_bom = parseFloat(cantidad_bom) || 0;
+            cantidad = parseFloat(cantidad) || 0;
+            rend_comp = parseFloat(rend_comp) || 0;
+
+            if (rend_comp != 0) {
+                cantidad_bom_ini = (cantidad_bom * cantidad) / rend_comp;
+                cantidad_bom_ini = Math.round10(cantidad_bom_ini, -fDecimal);
+            }
+
+            // Calcular la cantidad de lista de materiales inicial - redondeada al entero más cercano hacia arriba
+            if (arrayConfiguracionUnidadMedida?.[columnUnits]?.['redondear_hacia_arriba'] == true) {
+                cantidad_bom_ini = Math.ceil(cantidad_bom_ini);
+            } else {
+                cantidad_bom_ini = cantidad_bom_ini;
+            }
+
+            // Debug
+            // console.log('res calculateCantidadListaMaterialesInicial', { cantidad_bom_ini, cantidad_bom, cantidad, rend_comp })
+
+            return cantidad_bom_ini;
+        }
+
+        function getDetalleOrdenTrabajo_cantLisMatIni(dataCabeceraOrdenTrabajo, dataDetalleOrdenTrabajo, dataRevisionListaMateriales, dataConfiguracionUnidadMedida) {
+
+            // Debug
+            // error_log('data', { dataCabeceraOrdenTrabajo, dataDetalleOrdenTrabajo, dataRevisionListaMateriales, dataConfiguracionUnidadMedida });
+
+            let arrayRevisionListaMateriales = dataRevisionListaMateriales;
+            let arrayConfiguracionUnidadMedida = dataConfiguracionUnidadMedida;
+
+            dataDetalleOrdenTrabajo.forEach((value_detot, key_detot) => {
+
+                let columnItem = value_detot.articulo.id_interno;
+                let columnComponentYield = value_detot.rendimiento_componentes;
+                let columnUnits = value_detot.unitid;
+
+                // Validar data
+                if (!value_detot.cantidad_generada) {
+
+                    // Validar data
+                    if (columnItem && columnComponentYield && columnUnits) {
+
+                        // Obtener cantidad de lista de materiales inicial
+                        let quantity = dataCabeceraOrdenTrabajo.cantidad;
+                        let cant_lis_mat_ini = calculateCantidadListaMaterialesInicial(columnItem, columnComponentYield, columnUnits, quantity, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida);
+
+                        // Setear cantidad de lista de materiales inicial
+                        dataDetalleOrdenTrabajo[key_detot]['cantidad_generada'] = cant_lis_mat_ini;
+                    }
+                }
+            });
+
+            // Debug
+            // error_log('data', { dataCabeceraOrdenTrabajo, dataDetalleOrdenTrabajo, dataRevisionListaMateriales, dataConfiguracionUnidadMedida });
+
+            return dataDetalleOrdenTrabajo;
+        }
+
         function getDetalleOrdenTrabajo_principioActivo(dataDetalleOrdenTrabajo, dataRevisionListaMateriales) {
 
             dataDetalleOrdenTrabajo.forEach((value_detot, key_detot) => {
+
                 articulo_id_interno = value_detot.articulo.id_interno;
                 dataDetalleOrdenTrabajo[key_detot]['principio_activo'] = false;
 
@@ -618,8 +858,11 @@ define(['N'],
             getConfiguracionUnidadMedida,
             getConfiguracionEmpleadosPermisos,
             // Orden de Trabajo - Data
+            getCabeceraOrdenTrabajo,
             getDetalleOrdenTrabajo,
             getRevisionListaMateriales,
+            calculateCantidadListaMaterialesInicial,
+            getDetalleOrdenTrabajo_cantLisMatIni,
             getDetalleOrdenTrabajo_principioActivo
         }
 

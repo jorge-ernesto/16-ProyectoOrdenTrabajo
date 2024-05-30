@@ -159,7 +159,11 @@
                 <th colspan="1" align="right"><b>Línea:</b></th>
                 <th colspan="1">${params.workorder_data.linea}</th>
                 <th colspan="1" align="right"><b>Principio activo:</b></th>
-                <th colspan="1"><p style='background-color: #D6DBDF; color: #D6DBDF;'>Hola</p></th>
+                <#if (params.workorder_data.tipo_ot == '3')>
+                    <th colspan="1">-</th>
+                <#else>
+                    <th colspan="1"><p style='background-color: #D6DBDF; color: #D6DBDF;'>Hola</p></th>
+                </#if>
                 <th colspan="1"></th>
             </tr>
         </table>
