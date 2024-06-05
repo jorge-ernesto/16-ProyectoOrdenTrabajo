@@ -3,6 +3,8 @@
 //      - Biomont UE Orden Trabajo (customscript_bio_ue_orden_trabajo)
 // - Registro:
 //      - Orden de Trabajo (workorder)
+// - Contexto de Localizacion:
+//      - Peru
 
 // Validación como la usa LatamReady:
 // - ClientScript           : No se ejecuta en modo ver. Solo se ejecuta en modo crear, copiar o editar.
