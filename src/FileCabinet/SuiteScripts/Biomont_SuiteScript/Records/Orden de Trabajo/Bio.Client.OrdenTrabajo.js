@@ -3,6 +3,8 @@
 //      - Biomont CS Orden Trabajo (customscript_bio_cs_orden_trabajo)
 // - Registro:
 //      - Orden de Trabajo (workorder)
+// - Contexto de Localizacion:
+//      - Peru
 
 // Validación como la usa LatamReady:
 // - ClientScript           : No se ejecuta en modo ver. Solo se ejecuta en modo crear, copiar o editar.
@@ -45,18 +47,18 @@ define(['./lib/Bio.Library.Helper', 'N'],
          *
          * @since 2015.2
          */
-        function pageInit(scriptContext) {
+        function localizationContextEnter(scriptContext) {
 
             // Obtener el currentRecord y mode
             let recordContext = scriptContext.currentRecord;
-            let mode = scriptContext.mode;
+            let mode = recordContext.getValue('id') ? 'edit' : 'create';
 
             // Obtener datos
             let formulario = recordContext.getValue('customform') || null;
 
             // DEBUG
             // SIEMPRE SE EJECUTA
-            console.log('pageInit!!!', scriptContext);
+            console.log('localizationContextEnter!!!', scriptContext);
 
             // Modo crear, editar, copiar y formularios
             if ((mode == 'create' || mode == 'edit' || mode == 'copy') && formularios.includes(Number(formulario))) {
@@ -794,7 +796,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
         }
 
         return {
-            pageInit: pageInit,
+            localizationContextEnter: localizationContextEnter,
             validateField: validateField,
             fieldChanged: fieldChanged,
             saveRecord: saveRecord,
