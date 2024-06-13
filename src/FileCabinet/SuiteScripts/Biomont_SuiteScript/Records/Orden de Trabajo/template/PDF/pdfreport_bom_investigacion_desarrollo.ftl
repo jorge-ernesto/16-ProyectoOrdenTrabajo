@@ -214,7 +214,7 @@
                     <td colspan="4" align="left" style="border: none;"><b>Observaciones</b></td>
                 </tr>
                 <tr>
-                    <td colspan="4" align="left" style="border: none;">${observaciones}</td>
+                    <td colspan="4" align="left" style="border: none;">${params.workorder_data.observaciones}</td>
                 </tr>
             </tbody>
         </table>

@@ -106,7 +106,7 @@
 						<b>Laboratorios Biomont S.A.</b>
 					</th>
 					<th colspan="5" align="right" valign="middle">
-						<span class="fs15"><b>F-LOG.004.06</b></span>
+						<span class="fs15"><b>F-DSF.023.01</b></span>
 					</th>
 				</tr>
                 <tr>
@@ -174,7 +174,6 @@
                 <tr>
                     <td colspan="1" align="center"><b>Código</b></td>
                     <td colspan="1" align="center"><b>Descripción</b></td>
-                    <td colspan="1" align="center"><b>Cant. Generada</b></td>
                     <td colspan="1" align="center"><b>Cant. Entregada</b></td>
                     <td colspan="1" align="center"><b>UND</b></td>
                 </tr>
@@ -182,7 +181,6 @@
                 <tr>
                     <td colspan="1" <#if detordtra.principio_activo = true>style="background-color: #D6DBDF; color: #000000"</#if>>${detordtra.articulo.codigo}</td>
                     <td colspan="1" <#if detordtra.principio_activo = true>style="background-color: #D6DBDF; color: #000000"</#if>>${detordtra.articulo.descripcion}</td>
-                    <td colspan="1" align="center" <#if detordtra.principio_activo = true>style="background-color: #D6DBDF; color: #000000"</#if>>${detordtra.cantidad_generada?string("#,##0.000")}</td> <!-- ?string("#,##0.000") -->
                     <td colspan="1" align="center" <#if detordtra.principio_activo = true>style="background-color: #D6DBDF; color: #000000"</#if>>${detordtra.cantidad_entregada?string("#,##0.000")}</td> <!-- ?string("#,##0.000") -->
                     <td colspan="1" align="center" <#if detordtra.principio_activo = true>style="background-color: #D6DBDF; color: #000000"</#if>>${detordtra.unitabbreviation}</td>
                 </tr>
@@ -198,33 +196,33 @@
                 </tr>
                 <tr>
                     <td colspan="1" align="center"><b>Emitido por</b></td>
-                    <#if !(params.workorder_data.tipo_ot == '3' || params.workorder_data.tipo_ot == '4' || params.workorder_data.tipo_ot == '6')>
-                        <td colspan="1" align="center"><b>Ajustado por</b></td>
-                    </#if>
-                    <td colspan="1" align="center"><b>Verificado por</b></td>
+                    <td colspan="1" align="center"><b>Revisado por</b></td>
+                    <td colspan="1" align="center"><b>Aprobado por</b></td>
+                    <td colspan="1" align="center"><b>Recibido por</b></td>
                 </tr>
                 <tr>
                     <td colspan="1" align="center" valign="middle" style="height: 60px;">
-                        <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.emitido_por}</b></p>
-                        <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.fecha_firma_emitido}</b></p>
+                        <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.emitido_por__id}</b></p>
+                        <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.fecha_firma_emitido__id}</b></p>
                     </td>
-                    <#if !(params.workorder_data.tipo_ot == '3' || params.workorder_data.tipo_ot == '4' || params.workorder_data.tipo_ot == '6')>
-                        <td colspan="1" align="center" valign="middle" style="height: 60px;">
-                            <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.ajustado_por_almacen}</b></p>
-                            <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.fecha_firma_almacen}</b></p>
-                        </td>
-                    </#if>
                     <td colspan="1" align="center" valign="middle" style="height: 60px;">
-                        <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.verificado_por_aseguramiento}</b></p>
-                        <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.fecha_firma_aseguramiento}</b></p>
+                        <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.revisado_por__id}</b></p>
+                        <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.fecha_firma_revisado__id}</b></p>
+                    </td>
+                    <td colspan="1" align="center" valign="middle" style="height: 60px;">
+                        <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.aprobado_por__id}</b></p>
+                        <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.fecha_firma_aprobado__id}</b></p>
+                    </td>
+                    <td colspan="1" align="center" valign="middle" style="height: 60px;">
+                        <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.recibido_por__id}</b></p>
+                        <p align="center" style="margin-top: 0px; margin-bottom: 0px;"><b>${params.workorder_data.fecha_firma_recibido__id}</b></p>
                     </td>
                 </tr>
                 <tr>
+                    <td colspan="1" align="center"><b>Desarrollo Farmacéutico</b></td>
+                    <td colspan="1" align="center"><b>Desarrollo Farmacéutico</b></td>
                     <td colspan="1" align="center"><b>Logística</b></td>
-                    <#if !(params.workorder_data.tipo_ot == '3' || params.workorder_data.tipo_ot == '4' || params.workorder_data.tipo_ot == '6')>
-                        <td colspan="1" align="center"><b>Almacén</b></td>
-                    </#if>
-                    <td colspan="1" align="center"><b>Aseguramiento de la Calidad</b></td>
+                    <td colspan="1" align="center"><b>Almacén</b></td>
                 </tr>
                 <tr>
                     <td colspan="3" style="border: none;"></td>
