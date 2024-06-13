@@ -7,9 +7,9 @@
 //      - Peru
 
 // Validación como la usa LatamReady:
-// - ClientScript           : No se ejecuta en modo ver. Solo se ejecuta en modo crear, copiar o editar.
-// - En modo crear o editar : Validamos por el formulario.
-// - En modo ver            : Validamos por el pais de la subsidiaria.
+// - ClientScript                   : No se ejecuta en modo ver. Solo se ejecuta en modo crear, copiar o editar.
+// - En modo crear, copiar o editar : Validamos por el formulario.
+// - En modo ver                    : Validamos por el pais de la subsidiaria.
 
 /**
  * @NApiVersion 2.1
@@ -34,7 +34,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
          * 151: BIO_FRM_ORDEN_DE_TRABAJO
          * 228: BIO_FRM_ORDEN_DE_TRABAJO_PILOTOS
          */
-        const formularios = [151, 228];
+        const forms = [151, 228];
 
         /******************/
 
@@ -54,14 +54,14 @@ define(['./lib/Bio.Library.Helper', 'N'],
             let mode = recordContext.getValue('id') ? 'edit' : 'create';
 
             // Obtener datos
-            let formulario = recordContext.getValue('customform') || null;
+            let form_id = recordContext.getValue('customform') || null;
 
             // DEBUG
             // SIEMPRE SE EJECUTA
             console.log('localizationContextEnter!!!', scriptContext);
 
             // Modo crear, editar, copiar y formularios
-            if ((mode == 'create' || mode == 'edit' || mode == 'copy') && formularios.includes(Number(formulario))) {
+            if ((mode == 'create' || mode == 'edit' || mode == 'copy') && forms.includes(Number(form_id))) {
 
                 // Deshabilitar campos firmas
                 deshabilitarCamposFirmas(recordContext, mode);
@@ -92,10 +92,10 @@ define(['./lib/Bio.Library.Helper', 'N'],
             let mode = recordContext.getValue('id') ? 'edit' : 'create';
 
             // Obtener datos
-            let formulario = recordContext.getValue('customform') || null;
+            let form_id = recordContext.getValue('customform') || null;
 
             // Modo crear, editar, copiar y formularios
-            if ((mode == 'create' || mode == 'edit' || mode == 'copy') && formularios.includes(Number(formulario))) {
+            if ((mode == 'create' || mode == 'edit' || mode == 'copy') && forms.includes(Number(form_id))) {
 
                 setValueSubList_validateField(scriptContext, recordContext, mode);
             }
@@ -145,10 +145,10 @@ define(['./lib/Bio.Library.Helper', 'N'],
             let mode = recordContext.getValue('id') ? 'edit' : 'create';
 
             // Obtener datos
-            let formulario = recordContext.getValue('customform') || null;
+            let form_id = recordContext.getValue('customform') || null;
 
             // Modo crear, editar, copiar y formularios
-            if ((mode == 'create' || mode == 'edit' || mode == 'copy') && formularios.includes(Number(formulario))) {
+            if ((mode == 'create' || mode == 'edit' || mode == 'copy') && forms.includes(Number(form_id))) {
 
                 setValueSubList_fieldChanged(scriptContext, recordContext, mode);
             }
@@ -333,13 +333,13 @@ define(['./lib/Bio.Library.Helper', 'N'],
             let mode = recordContext.getValue('id') ? 'edit' : 'create';
 
             // Obtener datos
-            let formulario = recordContext.getValue('customform') || null;
+            let form_id = recordContext.getValue('customform') || null;
 
             // DEBUG
             console.log('saveRecord!!!', scriptContext);
 
             // Modo crear, editar, copiar y formularios
-            if ((mode == 'create' || mode == 'edit' || mode == 'copy') && formularios.includes(Number(formulario))) {
+            if ((mode == 'create' || mode == 'edit' || mode == 'copy') && forms.includes(Number(form_id))) {
 
                 // Validar campos firmas
                 if (!validarCamposFirmas(recordContext, mode)) {
