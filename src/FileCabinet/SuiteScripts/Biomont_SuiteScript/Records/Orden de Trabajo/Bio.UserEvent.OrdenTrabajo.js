@@ -7,9 +7,9 @@
 //      - Peru
 
 // Validación como la usa LatamReady:
-// - ClientScript           : No se ejecuta en modo ver. Solo se ejecuta en modo crear, copiar o editar.
-// - En modo crear o editar : Validamos por el formulario.
-// - En modo ver            : Validamos por el pais de la subsidiaria.
+// - ClientScript                   : No se ejecuta en modo ver. Solo se ejecuta en modo crear, copiar o editar.
+// - En modo crear, copiar o editar : Validamos por el formulario.
+// - En modo ver                    : Validamos por el pais de la subsidiaria.
 
 /**
  * @NApiVersion 2.1
@@ -28,7 +28,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
          * 151: BIO_FRM_ORDEN_DE_TRABAJO
          * 228: BIO_FRM_ORDEN_DE_TRABAJO_PILOTOS
          */
-        const formularios = [151, 228];
+        const forms = [151, 228];
 
         /******************/
 
@@ -47,7 +47,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
             let { newRecord, type } = scriptContext;
 
             // Obtener datos
-            let formulario = newRecord.getValue('customform') || null;
+            let form_id = newRecord.getValue('customform') || null;
             let subsidiary_id = newRecord.getValue('subsidiary') || null;
             let country_subsidiary_id = subsidiary_id ? objHelper.getCountrySubsidiary(subsidiary_id) : null;
 
@@ -72,19 +72,19 @@ define(['./lib/Bio.Library.Helper', 'N'],
             let { newRecord, type } = scriptContext;
 
             // Obtener datos
-            let formulario = newRecord.getValue('customform') || null;
+            let form_id = newRecord.getValue('customform') || null;
 
             // Modo crear y formularios
-            if (type == 'create' && formularios.includes(Number(formulario))) {
+            if (type == 'create' && forms.includes(Number(form_id))) {
 
                 // Setear fecha y hora actual
                 var now = new Date();
                 var datetime = format.format({ value: now, type: format.Type.DATETIME });
 
-                if (Number(formulario) == 151) { // Formulario "BIO_FRM_ORDEN_DE_TRABAJO"
+                if (Number(form_id) == 151) { // Formulario "BIO_FRM_ORDEN_DE_TRABAJO"
                     newRecord.setValue('custbody71', datetime)
 
-                } else if (Number(formulario) == 228) { // Formulario "BIO_FRM_ORDEN_DE_TRABAJO_PILOTOS"
+                } else if (Number(form_id) == 228) { // Formulario "BIO_FRM_ORDEN_DE_TRABAJO_PILOTOS"
                     newRecord.setValue('custbody105', datetime);
                 }
             }
