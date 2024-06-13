@@ -521,7 +521,7 @@ define(['N'],
                     aprobado_por__id: aprobado_por__id,
                     fecha_firma_aprobado__id: fecha_firma_aprobado__id,
                     recibido_por__id: recibido_por__id,
-                    fecha_firma_recibido__i: fecha_firma_recibido__id
+                    fecha_firma_recibido__id: fecha_firma_recibido__id
                 }
 
                 // Detener la búsqueda

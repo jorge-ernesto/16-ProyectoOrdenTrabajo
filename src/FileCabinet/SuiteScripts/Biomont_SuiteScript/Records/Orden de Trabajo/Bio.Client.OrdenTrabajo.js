@@ -525,9 +525,9 @@ define(['./lib/Bio.Library.Helper', 'N'],
                     /****************** Metodo en JavaScript de Juan Peña ******************/
                     if (false) {
                         let itemdata = document.getElementsByName('itemdata')[0].value;
-                        let matches = itemdata.match(/\b(BK|MP|ME|MV)\d{8}\b.*?(?=\b(BK|MP|ME|MV)\d{8}\b|$)/g);
+                        let matches = itemdata?.match(/\b(BK|MP|ME|MV)\d{8}\b.*?(?=\b(BK|MP|ME|MV)\d{8}\b|$)/g);
                         let array_filas = [];
-                        matches.forEach(match => {
+                        matches?.forEach(match => {
                             let subarray = match.split('\u0001');
                             array_filas.push({
                                 id_OT: document.getElementById("id").value,

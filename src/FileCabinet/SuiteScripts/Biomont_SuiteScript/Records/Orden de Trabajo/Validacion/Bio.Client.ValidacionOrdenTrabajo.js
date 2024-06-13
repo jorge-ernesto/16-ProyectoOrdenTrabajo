@@ -1,6 +1,6 @@
 // Notas del archivo:
 // - Secuencia de comando:
-//      - Biomont CS Validacion Orden Trabajo (customscript_bio_cs_validacion_orden_trabajo)
+//      - Biomont CS Validacion Orden Trabajo (customscript_bio_cs_valida_orden_trabajo)
 // - Registro:
 //      - Orden de Trabajo (workorder)
 

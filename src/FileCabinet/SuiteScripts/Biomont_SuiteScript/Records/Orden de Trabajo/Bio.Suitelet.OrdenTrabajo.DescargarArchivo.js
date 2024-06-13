@@ -33,7 +33,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
             let titleDocument = 'Reporte Orden de Trabajo - BOM'
 
             // Template del archivo
-            let templatePdf = (workorder_data.tipo_ot == 2) ? 'pdfreport_bom_investigacion_desarrollo' : 'pdfreport_bom_logistica';
+            let templatePdf = (workorder_data.tipo_ot == 2) ? 'pdfreport_bom_desarrollo_farmaceutico' : 'pdfreport_bom_logistica';
 
             // Crear PDF - Contenido dinamico
             let pdfContent = file.load(`./template/PDF/${templatePdf}.ftl`).getContents();
@@ -98,6 +98,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
             let fecha_fabricacion = dataCabeceraOrdenTrabajo.fecha_fabricacion;
             fecha_fabricacion = fecha_fabricacion ? fecha_fabricacion.split('/')[1] + '-' + fecha_fabricacion.split('/')[2] : '';
             let fecha_expira = dataCabeceraOrdenTrabajo.fecha_expira;
+            fecha_expira = fecha_expira ? fecha_expira.split('/')[1] + '-' + fecha_expira.split('/')[2] : '';
 
             // Debug
             // objHelper.error_log('data', { dataDetalleOrdenTrabajo, dataRevisionListaMateriales, dataDetalleOrdenTrabajo_principioActivo });
