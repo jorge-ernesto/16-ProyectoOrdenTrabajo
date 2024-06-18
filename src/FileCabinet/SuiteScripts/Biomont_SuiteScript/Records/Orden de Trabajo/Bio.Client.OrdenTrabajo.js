@@ -328,7 +328,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
          */
         function saveRecord(scriptContext) {
 
-            // Obtener el currentRecord
+            // Obtener el currentRecord y mode
             let recordContext = scriptContext.currentRecord;
             let mode = recordContext.getValue('id') ? 'edit' : 'create';
 
