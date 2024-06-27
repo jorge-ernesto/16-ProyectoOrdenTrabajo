@@ -36,6 +36,17 @@ define(['./lib/Bio.Library.Helper', 'N'],
          */
         const forms = [151, 228];
 
+        /**
+         * Tipos de Orden de Trabajo
+         *
+         * 1: FABRICACIÓN
+         * 2: ENSAYOS Y PILOTOS
+         * 3: ENVASADO Y EMPACADO
+         * 4: REACONDICIONADO
+         * 5: HORAS COMPLEMENTARIAS
+         * 6: ACONDICIONADO
+         */
+
         /******************/
 
         /**
@@ -346,6 +357,11 @@ define(['./lib/Bio.Library.Helper', 'N'],
                     return false;
                 }
 
+                // Validar campos sublista
+                if (!validarCamposSublistaCantidades(recordContext, mode)) {
+                    return false;
+                }
+
                 // Guardar cantidad de lista de materiales
                 guardarCantidadListaMateriales(recordContext, mode);
             }
@@ -503,6 +519,112 @@ define(['./lib/Bio.Library.Helper', 'N'],
             return true;
         }
 
+        function validarCamposSublistaCantidades(recordContext, mode) {
+
+            let mensaje = 'Articulos:';
+            let errores_primera_linea = [];
+            let errores_lineas = [];
+
+            // Obtener data
+            let tipo_ot = recordContext.getValue('custbody8');
+
+            // Validar tipo de orden de trabajo
+            if (tipo_ot == '3') {
+
+                // Obtener data de la sublista
+                let sublistName = 'item';
+                let lineCount = recordContext.getLineCount({ sublistId: sublistName });
+                let itemSublist = recordContext.getSublist({ sublistId: sublistName });
+
+                // Recorrer sublista
+                for (let i = 0; i < lineCount; i++) {
+                    // console.log('i', i);
+
+                    // Obtener campos
+                    let columnItem = recordContext.getSublistText({
+                        sublistId: sublistName,
+                        fieldId: 'item',
+                        line: i
+                    });
+                    let columnCantLisMatIni = recordContext.getSublistValue({
+                        sublistId: sublistName,
+                        fieldId: 'custcol_bio_cant_lis_mat_ini',
+                        line: i
+                    });
+                    let columnCantLisMat = recordContext.getSublistValue({
+                        sublistId: sublistName,
+                        fieldId: 'bomquantity',
+                        line: i
+                    });
+
+                    // Validar data
+                    if (columnCantLisMatIni && columnCantLisMat) {
+
+                        // Validar la primera linea
+                        if (i == 0) {
+
+                            // Calcular diferencia porcentual
+                            let diffPercentage = Math.abs((columnCantLisMatIni - columnCantLisMat) / columnCantLisMat) * 100;
+
+                            // Validar diferencia mayor al 10%
+                            if (diffPercentage > 10) {
+                                errores_primera_linea.push(columnItem);
+                            }
+                        }
+
+                        // Validar las demas lineas
+                        if (i > 0) {
+
+                            // Validar diferencia
+                            if (Math.ceil(columnCantLisMatIni) != Math.ceil(columnCantLisMat)) {
+                                errores_lineas.push(columnItem);
+                            }
+                        }
+                    }
+                }
+
+                // Validar la primera linea
+                if (Object.keys(errores_primera_linea).length > 0) {
+                    let articulo = errores_primera_linea[0];
+
+                    // Cargar Sweet Alert
+                    loadSweetAlertLibrary().then(function () {
+
+                        // Ejecutar validacion
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops...",
+                            html: `El detalle de las cantidades del articulo ${articulo} tiene una diferencia mayor al 10%. Cargar nuevamente ensamblaje`,
+                        });
+                    });
+
+                    return false;
+                }
+
+                // Validar las demas lineas
+                if (Object.keys(errores_lineas).length > 0) {
+                    for (let error in errores_lineas) {
+                        mensaje += `<br />${errores_lineas[error]}`
+                    }
+
+                    // Cargar Sweet Alert
+                    loadSweetAlertLibrary().then(function () {
+
+                        // Ejecutar validacion
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops...",
+                            html: `El detalle de las cantidades de articulos tienen una diferencia. Cargar nuevamente ensamblaje<br /><br />${mensaje}`,
+                        });
+                    });
+
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         function guardarCantidadListaMateriales(recordContext, mode) {
 
             // Modo editar
@@ -549,7 +671,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                     // Recorrer sublista
                     let array_filas = [];
                     for (let i = 0; i < lineCount; i++) {
-                        // log.debug('i', i);
+                        // console.debug('i', i);
 
                         // Obtener campos
                         let columnItem = recordContext.getSublistText({
