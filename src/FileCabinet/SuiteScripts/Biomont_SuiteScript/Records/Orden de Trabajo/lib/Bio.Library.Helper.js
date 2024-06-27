@@ -534,6 +534,9 @@ define(['N'],
 
         function getDetalleOrdenTrabajo(workOrderId) {
 
+            // Configuracion de decimales
+            let fDecimal = 3;
+
             // Crear un array para almacenar los valores
             let detalleOrdenTrabajoArray = [];
 
@@ -589,7 +592,7 @@ define(['N'],
                 let articulo_id_interno = result.getValue(columns[1])
                 let articulo_codigo = result.getValue(columns[2]);
                 let articulo_descripcion = result.getValue(columns[3]);
-                let cantidad_generada = result.getValue(columns[4]);
+                let cantidad_generada = result.getValue(columns[4]); // custcol_bio_cant_lis_mat_ini
                 // let cantidad_entregada = result.getValue(columns[5]); // quantity
                 let cantidad_entregada = result.getValue(columns[6]); // quantityuom
                 let unitabbreviation = result.getValue(columns[7]);
@@ -598,9 +601,19 @@ define(['N'],
                 let unitid = result.getValue(columns[9]);
 
                 // Procesar informacion
-                // Informacion que se utiliza en el PDF - si no hay data, mostrara una cadena de texto vacia
-                cantidad_generada = parseFloat(cantidad_generada) || '';
-                cantidad_entregada = parseFloat(cantidad_entregada) || '';
+                // Informacion que se utiliza en el PDF - si no hay data, mostrara 0
+                cantidad_generada = parseFloat(cantidad_generada) || 0;
+                cantidad_entregada = parseFloat(cantidad_entregada) || 0;
+
+                // Informacion que se utiliza en el PDF - redondear cantidades
+                cantidad_generada = Math.round10(cantidad_generada, -fDecimal);
+                cantidad_entregada = Math.round10(cantidad_entregada, -fDecimal);
+
+                // Informacion que se utiliza en el PDF - validar textos con @
+                articulo_codigo = articulo_codigo.replace(/@/g, '');
+
+                // Informacion que se utiliza en el PDF - validar textos con &
+                articulo_descripcion = articulo_descripcion.replace(/&/g, '&amp;');
 
                 // Insertar informacion en array
                 detalleOrdenTrabajoArray.push({
@@ -714,10 +727,10 @@ define(['N'],
             return dataAgrupada;
         }
 
-        function calculateCantidadListaMaterialesInicial(columnItem, columnComponentYield, columnUnits, quantity, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida) {
+        function calculateCantidadListaMaterialesInicial(columnItem, columnComponentYield, columnUnits, quantity, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida, view = 'html') {
 
             // Debug
-            // console.log('req calculateCantidadListaMaterialesInicial', { columnItem, columnComponentYield, columnUnits, quantity, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida })
+            // console.log('req calculateCantidadListaMaterialesInicial', { columnItem, columnComponentYield, columnUnits, quantity, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida, view })
 
             // Configuracion de decimales
             let fDecimal = 5;
@@ -735,13 +748,21 @@ define(['N'],
             rend_comp = parseFloat(rend_comp) || 0;
 
             if (rend_comp != 0) {
-                cantidad_bom_ini = (cantidad_bom * cantidad) / rend_comp;
+                cantidad_bom_ini = (cantidad_bom * cantidad);
                 cantidad_bom_ini = Math.round10(cantidad_bom_ini, -fDecimal);
             }
 
             // Calcular la cantidad de lista de materiales inicial - redondeada al entero más cercano hacia arriba
             if (arrayConfiguracionUnidadMedida?.[columnUnits]?.['redondear_hacia_arriba'] == true) {
                 cantidad_bom_ini = Math.ceil(cantidad_bom_ini);
+            } else {
+                cantidad_bom_ini = cantidad_bom_ini;
+            }
+
+            // Informacion que se utiliza en el PDF - redondear cantidades
+            if (view == 'pdf') {
+                let fDecimal = 3;
+                cantidad_bom_ini = Math.round10(cantidad_bom_ini, -fDecimal);
             } else {
                 cantidad_bom_ini = cantidad_bom_ini;
             }
@@ -774,7 +795,7 @@ define(['N'],
 
                         // Obtener cantidad de lista de materiales inicial
                         let quantity = dataCabeceraOrdenTrabajo.cantidad;
-                        let cant_lis_mat_ini = calculateCantidadListaMaterialesInicial(columnItem, columnComponentYield, columnUnits, quantity, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida);
+                        let cant_lis_mat_ini = calculateCantidadListaMaterialesInicial(columnItem, columnComponentYield, columnUnits, quantity, arrayRevisionListaMateriales, arrayConfiguracionUnidadMedida, view = 'pdf');
 
                         // Setear cantidad de lista de materiales inicial
                         dataDetalleOrdenTrabajo[key_detot]['cantidad_generada'] = cant_lis_mat_ini;

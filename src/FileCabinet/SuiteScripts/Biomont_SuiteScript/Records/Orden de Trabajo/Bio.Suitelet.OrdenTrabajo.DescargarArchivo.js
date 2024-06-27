@@ -111,7 +111,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
                 // Data
                 // Cabecera
-                codigo_producto: assemblyitemRecord.getValue('itemid'),
+                codigo_producto: assemblyitemRecord.getValue('itemid').replace(/@/g, ''),
                 producto: assemblyitemRecord.getValue('displayname'),
                 numero_ot: dataCabeceraOrdenTrabajo.numero_ot,
                 cantidad: dataCabeceraOrdenTrabajo.cantidad,
