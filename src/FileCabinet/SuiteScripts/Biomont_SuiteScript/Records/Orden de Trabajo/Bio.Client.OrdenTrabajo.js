@@ -495,7 +495,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                         let ultimoElementoFlujoFirmas = arrayFlujoFirmas[arrayFlujoFirmas.length - 1];
                         let ultimaFirma = recordContext.getValue(ultimoElementoFlujoFirmas['id_campo_usuario_firma']);
 
-                        // Validar campo con data - que se haya firmado
+                        // Validar campo firma - que se haya firmado
                         // Validar que usuario no este registros en empleados permisos
                         if (ultimaFirma && !arrayEmpleadosPermisos.includes(Number(user.id))) {
 

@@ -176,7 +176,7 @@ define(['./lib/Bio.Library.Helper', 'N'],
                 // Recorrer flujo de firmas
                 flujo_firmas_array_reverse.some((element, i) => {
 
-                    // Validar campo con data - que se haya firmado
+                    // Validar campo firma - que se haya firmado
                     if (newRecord.getValue(element.id_campo_usuario_firma)) {
 
                         // Validar existencia de propiedades para botones
