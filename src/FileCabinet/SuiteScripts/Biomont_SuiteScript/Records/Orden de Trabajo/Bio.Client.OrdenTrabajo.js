@@ -439,11 +439,13 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
             let recordObj = recordContext;
 
-            // Obtener columna y deshabilitarla
+            // Obtener sublista
             // https://6462530-sb1.app.netsuite.com/app/help/helpcenter.nl?fid=section_158618597707.html
             var sublistObj = recordObj.getSublist({
                 sublistId: 'item'
             });
+
+            // Obtener columnas
             var columnObj = sublistObj.getColumn({
                 fieldId: 'custcol_bio_cant_lis_mat_ini'
             });
@@ -456,11 +458,13 @@ define(['./lib/Bio.Library.Helper', 'N'],
 
             let recordObj = recordContext;
 
-            // Obtener columna
+            // Obtener sublista
             // https://6462530-sb1.app.netsuite.com/app/help/helpcenter.nl?fid=section_158618597707.html
             var sublistObj = recordObj.getSublist({
                 sublistId: 'item'
             });
+
+            // Obtener columnas
             var columnObj = sublistObj.getColumn({
                 fieldId: 'custcol_bio_cant_lis_mat_ini'
             });
