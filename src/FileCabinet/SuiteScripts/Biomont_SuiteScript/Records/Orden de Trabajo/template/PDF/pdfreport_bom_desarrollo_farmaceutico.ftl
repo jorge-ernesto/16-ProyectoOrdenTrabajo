@@ -106,7 +106,7 @@
 						<b>Laboratorios Biomont S.A.</b>
 					</th>
 					<th colspan="5" align="right" valign="middle">
-						<span class="fs15"><b>F-DSF.023.01</b></span>
+						<span class="fs15"><b>F-DF.023.01</b></span>
 					</th>
 				</tr>
                 <tr>
@@ -162,7 +162,9 @@
                 <#if (params.workorder_data.tipo_ot == '3')>
                     <th colspan="1">-</th>
                 <#else>
-                    <th colspan="1"><p style='background-color: #D6DBDF; color: #D6DBDF;'>Hola</p></th>
+                    <th colspan="1">
+                        <div style='margin: 0px; padding: 0px; width: 19px; height: 9px; background-color: #D6DBDF; color: #D6DBDF;'></div>
+                    </th>
                 </#if>
                 <th colspan="1"></th>
             </tr>
