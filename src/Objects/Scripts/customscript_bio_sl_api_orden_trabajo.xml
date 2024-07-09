@@ -1,0 +1,25 @@
+<suitelet scriptid="customscript_bio_sl_api_orden_trabajo">
+  <description></description>
+  <isinactive>F</isinactive>
+  <name>Biomont SL API Orden Trabajo</name>
+  <notifyadmins>F</notifyadmins>
+  <notifyemails></notifyemails>
+  <notifyowner>T</notifyowner>
+  <notifyuser>F</notifyuser>
+  <scriptfile>[/SuiteScripts/Biomont_SuiteScript/Records/Orden de Trabajo/Bio.SuiteletAPI.OrdenTrabajo.js]</scriptfile>
+  <scriptdeployments>
+    <scriptdeployment scriptid="customdeploy_bio_sl_api_orden_trabajo">
+      <allemployees>F</allemployees>
+      <allpartners>F</allpartners>
+      <allroles>T</allroles>
+      <audslctrole></audslctrole>
+      <eventtype></eventtype>
+      <isdeployed>T</isdeployed>
+      <isonline>F</isonline>
+      <loglevel>DEBUG</loglevel>
+      <runasrole>ADMINISTRATOR</runasrole>
+      <status>RELEASED</status>
+      <title>Biomont SL API Orden Trabajo</title>
+    </scriptdeployment>
+  </scriptdeployments>
+</suitelet>

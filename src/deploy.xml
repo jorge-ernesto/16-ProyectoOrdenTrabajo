@@ -3,7 +3,16 @@
         <path>~/AccountConfiguration/*</path>
     </configuration>
     <files>
-        <path>~/FileCabinet/*</path>
+        <!-- POR DEFECTO -->
+        <!-- <path>~/FileCabinet/*</path> -->
+
+        <!-- PERSONALIZADO -->
+        <path>~/FileCabinet/SuiteScripts/Biomont_SuiteScript/Records/Orden de Trabajo/lib/*</path>
+        <path>~/FileCabinet/SuiteScripts/Biomont_SuiteScript/Records/Orden de Trabajo/template/*</path>
+        <path>~/FileCabinet/SuiteScripts/Biomont_SuiteScript/Records/Orden de Trabajo/Bio.Client.OrdenTrabajo.js</path>
+        <path>~/FileCabinet/SuiteScripts/Biomont_SuiteScript/Records/Orden de Trabajo/Bio.Suitelet.OrdenTrabajo.DescargarArchivo.js</path>
+        <path>~/FileCabinet/SuiteScripts/Biomont_SuiteScript/Records/Orden de Trabajo/Bio.SuiteletAPI.OrdenTrabajo.js</path>
+        <path>~/FileCabinet/SuiteScripts/Biomont_SuiteScript/Records/Orden de Trabajo/Bio.UserEvent.OrdenTrabajo.js</path>
     </files>
     <objects>
         <path>~/Objects/*</path>
